@@ -11,12 +11,12 @@ resources:
 images:
   - name: devops-admin-platform-ui
     newName: ghcr.io/${{ github.repository }}/ui
-    newTag: latest # This will be updated by CI/CD
+    newTag: 0a8b5db3b5c0489c914070a871c465b11d6758cb
 
   - name: devops-admin-platform-api
     newName: ghcr.io/${{ github.repository }}/api
-    newTag: latest # This will be updated by CI/CD
+    newTag: 0a8b5db3b5c0489c914070a871c465b11d6758cb
 
   - name: devops-admin-platform-agent
     newName: ghcr.io/${{ github.repository }}/agent
-    newTag: latest # This will be updated by CI/CD
+    newTag: 0a8b5db3b5c0489c914070a871c465b11d6758cb
