@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
+	""net/http"
 	os"
 	"time"
 
@@ -31,22 +31,6 @@ func main() {
 
 	log.Println("API server listening on :8080")
 	http.ListenAndServe(":8080", r)
-}
-
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	var payload struct {
-		AgentID   string `json:"agent_id"`
-		Hostname  string `json:"hostname"`
-		Timestamp string `json:"timestamp"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	log.Printf("Received ping from agent %s (%s) at %s", payload.AgentID, payload.Hostname, payload.Timestamp)
-	w.WriteHeader(http.StatusOK)
 }
 
 func initPostgres() {
@@ -89,6 +73,22 @@ func initRedis() {
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
+}
+
+func pingHandler(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		AgentID   string `json:"agent_id"`
+		Hostname  string `json:"hostname"`
+		Timestamp string `json:"timestamp"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Received ping from agent %s (%s) at %s", payload.AgentID, payload.Hostname, payload.Timestamp)
+	w.WriteHeader(http.StatusOK)
 }
 
 func getEnv(key, fallback string) string {
