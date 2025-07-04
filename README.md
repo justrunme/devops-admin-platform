@@ -1,39 +1,39 @@
 # DevOps Admin Platform
 
-[![CI/CD Status](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci-cd.yaml)
+[![CI/CD Status](https://github.com/justrunme/devops-admin-platform/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/ci-cd.yaml)
 
-## Описание проекта
+## Project Description
 
-**DevOps Admin Platform** — это комплексная, Kubernetes-ready система для управления инфраструктурой, разработанная как аналог таких решений, как Tactical RMM и FleetDM. Проект демонстрирует глубокую экспертизу в области DevOps, включая современные практики CI/CD, GitOps, мониторинга, логирования и безопасности. Идеально подходит как для демонстрации на GitHub, так и для использования в реальных проектах.
+**DevOps Admin Platform** is a comprehensive, Kubernetes-ready system for infrastructure management, designed as an alternative to solutions like Tactical RMM and FleetDM. The project demonstrates deep expertise in DevOps, including modern practices of CI/CD, GitOps, monitoring, logging, and security. It is ideal for showcasing on GitHub as well as for use in real-world projects.
 
-## Ключевые особенности
+## Key Features
 
--   **Единая панель управления**: UI на Next.js для централизованного управления инфраструктурой.
--   **Высокопроизводительный API**: Backend на Go для эффективного взаимодействия с компонентами системы.
--   **Агентская система**: Простые агенты (Python) для имитации подключенных устройств и сбора данных.
--   **Полный цикл CI/CD**: Автоматизированная сборка, тестирование и доставка приложений с использованием GitHub Actions.
--   **GitOps с ArgoCD**: Декларативное управление инфраструктурой и приложениями, обеспечивающее автоматическую синхронизацию состояния кластера с Git-репозиторием.
--   **Комплексный мониторинг**: Prometheus для сбора метрик, Grafana для визуализации данных и Loki для централизованного логирования.
--   **Безопасность**: Интеграция с Trivy и Kyverno (планируется) для сканирования уязвимостей и применения политик безопасности.
--   **Автоматический TLS**: Использование cert-manager для автоматического получения и обновления SSL/TLS сертификатов.
+-   **Unified Control Panel**: Next.js UI for centralized infrastructure management.
+-   **High-Performance API**: Go backend for efficient interaction with system components.
+-   **Agent System**: Simple agents (Python) to simulate connected devices and collect data.
+-   **Full CI/CD Cycle**: Automated build, testing, and deployment of applications using GitHub Actions.
+-   **GitOps with ArgoCD**: Declarative infrastructure and application management, ensuring automatic synchronization of cluster state with the Git repository.
+-   **Comprehensive Monitoring**: Prometheus for metric collection, Grafana for data visualization, and Loki for centralized logging.
+-   **Security**: Integration with Trivy and Kyverno (planned) for vulnerability scanning and security policy enforcement.
+-   **Automatic TLS**: Using cert-manager for automatic acquisition and renewal of SSL/TLS certificates.
 
-## Выбранный стек
+## Chosen Stack
 
-| Компонент             | Технология             | Обоснование                                      |
+| Component             | Technology             | Justification                                      |
 | :-------------------- | :--------------------- | :----------------------------------------------- |
-| **UI**                | Next.js (React)        | Быстро, SSR, масштабируемо                       |
-| **API**               | Go (Golang)            | Лёгкий, быстрый, подходит для production API     |
-| **База данных**       | PostgreSQL             | Надёжная и расширяемая                           |
-| **Кеш**               | Redis                  | Мгновенный доступ, pub/sub                       |
-| **Kubernetes Mgmt**   | Kustomize              | Гибкость и переиспользуемость манифестов         |
-| **CI/CD**             | GitHub Actions         | Популярный, легко интегрируется                  |
-| **GitOps**            | ArgoCD                 | Удобная визуализация и контроль состояния        |
-| **Мониторинг**        | Prometheus + Grafana   | Де-факто стандарт в Kubernetes                   |
-| **Логирование**       | Loki                   | Быстро и нативно с Grafana                       |
-| **Безопасность**      | Trivy + Kyverno        | Скан уязвимостей + политика безопасности (план)  |
-| **TLS/Ingress**       | NGINX + cert-manager   | Автоматический HTTPS, простой ingress            |
+| **UI**                | Next.js (React)        | Fast, SSR, scalable                               |
+| **API**               | Go (Golang)            | Lightweight, fast, suitable for production API     |
+| **Database**          | PostgreSQL             | Reliable and extensible                           |
+| **Cache**             | Redis                  | Instant access, pub/sub                           |
+| **Kubernetes Mgmt**   | Kustomize              | Flexible and reusable manifests                   |
+| **CI/CD**             | GitHub Actions         | Popular, easily integrated                        |
+| **GitOps**            | ArgoCD                 | Convenient visualization and state control        |
+| **Monitoring**        | Prometheus + Grafana   | De-facto standard in Kubernetes                   |
+| **Logging**           | Loki                   | Fast and native with Grafana                      |
+| **Security**          | Trivy + Kyverno        | Vulnerability scanning + security policy (plan)   |
+| **TLS/Ingress**       | NGINX + cert-manager   | Automatic HTTPS, simple ingress                   |
 
-## Структура проекта
+## Project Structure
 
 ```
 devops-admin-platform/
@@ -49,98 +49,98 @@ devops-admin-platform/
 │   ├── next.config.js
 │   └── pages/
 │
-├── agent/                          # Скрипт-агент (эмуляция клиентов)
+├── agent/                          # Agent script (client emulation)
 │   ├── Dockerfile
 │   └── agent.py
 │
-├── infra/                          # Инфраструктура
-│   ├── k8s/                        # K8s манифесты (Kustomize)
-│   │   ├── base/                   # Базовые манифесты
+├── infra/                          # Infrastructure
+│   ├── k8s/                        # K8s manifests (Kustomize)
+│   │   ├── base/                   # Base manifests
 │   │   │   ├── api/                # API Deployment & Service
 │   │   │   ├── ui/                 # UI Deployment & Service
 │   │   │   ├── agent/              # Agent Deployment
 │   │   │   ├── postgres/           # PostgreSQL Deployment, Service, PVC
 │   │   │   ├── redis/              # Redis Deployment & Service
-│   │   │   ├── ingress.yaml        # Ingress для UI/API
-│   │   │   ├── secrets.yaml        # Секреты приложения
+│   │   │   ├── ingress.yaml        # Ingress for UI/API
+│   │   │   ├── secrets.yaml        # Application secrets
 │   │   │   ├── cluster-issuer.yaml # Cert-manager ClusterIssuer
-│   │   │   ├── argocd-ingress.yaml # Ingress для ArgoCD UI
+│   │   │   ├── argocd-ingress.yaml # Ingress for ArgoCD UI
 │   │   │   ├── argocd-app.yaml     # ArgoCD Application definition
 │   │   │   └── kustomization.yaml  # Kustomize base
-│   │   └── overlays/              # dev / staging / prod окружения (план)
+│   │   └── overlays/              # dev / staging / prod environments (plan)
 │   │       ├── dev/
 │   │       └── prod/
 │
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yaml             # CI/CD пайплайн (GitHub Actions)
+│       └── ci-cd.yaml             # CI/CD pipeline (GitHub Actions)
 │
 ├── scripts/
-│   ├── deploy.sh                  # Установка на Minikube (устарело, теперь GitOps)
-│   └── smoke-test.sh              # Проверка после деплоя
+│   ├── deploy.sh                  # Minikube deployment (deprecated, now GitOps)
+│   └── smoke-test.sh              # Post-deployment verification
 │
-├── manifests/                     # Манифесты для сторонних сервисов (Prometheus, Grafana, Loki, ArgoCD)
-│   ├── prometheus/                # (Устанавливается через Helm)
-│   ├── grafana/                   # (Устанавливается через Helm)
-│   ├── loki/                      # (Устанавливается через Helm)
-│   └── argocd/                    # (Устанавливается через Helm)
+├── manifests/                     # Manifests for third-party services (Prometheus, Grafana, Loki, ArgoCD)
+│   ├── prometheus/                # (Installed via Helm)
+│   ├── grafana/                   # (Installed via Helm)
+│   ├── loki/                      # (Installed via Helm)
+│   └── argocd/                    # (Installed via Helm)
 │
-├── README.md                      # Документация проекта
-├── architecture.md                # Архитектурное описание
-├── docker-compose.yaml            # Локальный запуск без K8s (dev-режим)
-└── Makefile                       # Команды для запуска, сборки и деплоя
+├── README.md                      # Project documentation
+├── architecture.md                # Architectural description
+├── docker-compose.yaml            # Local run without K8s (dev-mode)
+└── Makefile                       # Commands for running, building, and deploying
 ```
 
-## Как развернуть
+## How to Deploy
 
-### Локальная разработка (Docker Compose)
+### Local Development (Docker Compose)
 
-Для быстрой локальной разработки и тестирования всех компонентов без Kubernetes:
+For quick local development and testing of all components without Kubernetes:
 
-1.  **Установите Docker и Docker Compose.**
-2.  **Перейдите в корневую директорию проекта:**
+1.  **Install Docker and Docker Compose.**
+2.  **Navigate to the project root directory:**
     ```bash
     cd devops-admin-platform
     ```
-3.  **Запустите все сервисы:**
+3.  **Start all services:**
     ```bash
     docker compose up --build
     ```
-    Это соберет образы, запустит UI, API, PostgreSQL, Redis и Agent.
-4.  **Доступ к сервисам:**
+    This will build images and start the UI, API, PostgreSQL, Redis, and Agent.
+4.  **Access Services:**
     *   **UI**: `http://localhost:3000`
-    *   **API**: `http://localhost:8080` (для проверки `http://localhost:8080/health`)
+    *   **API**: `http://localhost:8080` (for health check `http://localhost:8080/health`)
 
-### Развертывание в Kubernetes (Minikube/Kind + GitOps)
+### Deployment in Kubernetes (Minikube/Kind + GitOps)
 
-Для полноценного развертывания с использованием GitOps и всех компонентов:
+For full-fledged deployment using GitOps and all components:
 
-1.  **Установите `kubectl`, `minikube` (или `kind`) и `helm`.**
+1.  **Install `kubectl`, `minikube` (or `kind`), and `helm`.**
 
-2.  **Запустите Minikube (если используете):**
+2.  **Start Minikube (if using):**
     ```bash
     minikube start
     ```
 
-3.  **Включите Ingress addon в Minikube:**
+3.  **Enable Ingress addon in Minikube:**
     ```bash
     minikube addons enable ingress
     ```
 
-4.  **Установите cert-manager:**
+4.  **Install cert-manager:**
     ```bash
     kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.0/cert-manager.yaml
     ```
-    Подождите, пока поды `cert-manager` запустятся (`kubectl get pods -n cert-manager`).
+    Wait for `cert-manager` pods to start (`kubectl get pods -n cert-manager`).
 
-5.  **Добавьте Helm репозитории:**
+5.  **Add Helm repositories:**
     ```bash
     helm repo add grafana https://grafana.github.io/helm-charts
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     helm repo update
     ```
 
-6.  **Установите Prometheus и Grafana:**
+6.  **Install Prometheus and Grafana:**
     ```bash
     helm install monitoring prometheus-community/kube-prometheus-stack \
       --namespace monitoring --create-namespace \
@@ -152,36 +152,36 @@ devops-admin-platform/
       --set grafana.adminPassword=admin123
     ```
 
-7.  **Установите Loki и Promtail:**
+7.  **Install Loki and Promtail:**
     ```bash
     helm install loki grafana/loki-stack \
       --namespace monitoring \
       --set grafana.enabled=false
     ```
 
-8.  **Установите ArgoCD:**
+8.  **Install ArgoCD:**
     ```bash
     kubectl create namespace argocd
     kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     ```
-    Подождите, пока поды `argocd` запустятся (`kubectl get pods -n argocd`).
+    Wait for `argocd` pods to start (`kubectl get pods -n argocd`).
 
-9.  **Настройте GitHub Container Registry (GHCR) и GitHub Secrets:**
-    *   В вашем GitHub репозитории (`Settings` -> `Actions` -> `General`) включите `Read and write permissions` для `Workflow permissions`.
-    *   Создайте Personal Access Token (PAT) с разрешениями `write:packages`, `read:packages`, `workflow` и `repo`.
-    *   Добавьте следующие секреты в ваш репозиторий (`Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`):
-        *   `GHCR_USERNAME`: Ваш GitHub username.
-        *   `GHCR_TOKEN`: Ваш созданный PAT.
+9.  **Configure GitHub Container Registry (GHCR) and GitHub Secrets:**
+    *   In your GitHub repository (`Settings` -> `Actions` -> `General`), enable `Read and write permissions` for `Workflow permissions`.
+    *   Create a Personal Access Token (PAT) with `write:packages`, `read:packages`, `workflow`, and `repo` permissions.
+    *   Add the following secrets to your repository (`Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`):
+        *   `GHCR_USERNAME`: Your GitHub username.
+        *   `GHCR_TOKEN`: Your created PAT.
 
-10. **Обновите `infra/k8s/base/argocd-app.yaml`:**
-    Замените `YOUR_USERNAME` и `YOUR_REPO` на актуальные данные вашего GitHub репозитория.
+10. **Update `infra/k8s/base/argocd-app.yaml`:**
+    Replace `YOUR_USERNAME` and `YOUR_REPO` with your actual GitHub repository details.
 
-11. **Примените базовые манифесты приложения (включая ArgoCD Application и Ingresses):**
+11. **Apply base application manifests (including ArgoCD Application and Ingresses):**
     ```bash
     kubectl apply -k infra/k8s/base
     ```
 
-12. **Добавьте записи в ваш `/etc/hosts` файл:**
+12. **Add entries to your `/etc/hosts` file:**
     ```
     127.0.0.1 devops.local
     127.0.0.1 grafana.devops.local
@@ -189,68 +189,68 @@ devops-admin-platform/
     127.0.0.1 prometheus.devops.local
     ```
 
-13. **Запустите `minikube tunnel` (если используете Minikube) в отдельном терминале:**
+13. **Run `minikube tunnel` (if using Minikube) in a separate terminal:**
     ```bash
     minikube tunnel
     ```
-    Это необходимо для работы Ingress.
+    This is necessary for Ingress to work.
 
-## Как пользоваться
+## How to Use
 
-### Доступ к UI/API
+### Access UI/API
 
-После развертывания в Kubernetes, UI и API доступны по HTTPS:
+After deployment in Kubernetes, the UI and API are accessible via HTTPS:
 
 *   **UI**: `https://devops.local`
 *   **API Health Check**: `https://devops.local/api/health`
 
-### Доступ к Grafana
+### Access Grafana
 
 *   **URL**: `https://grafana.devops.local`
-*   **Логин**: `admin`
-*   **Пароль**: `admin123` (или тот, что вы указали при установке)
+*   **Login**: `admin`
+*   **Password**: `admin123` (or the one you specified during installation)
 
-### Доступ к ArgoCD
+### Access ArgoCD
 
 *   **URL**: `https://argocd.devops.local`
-*   **Логин**: `admin`
-*   **Пароль**: Получите пароль командой:
+*   **Login**: `admin`
+*   **Password**: Get the password using the command:
     ```bash
     kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
     ```
 
-### Мониторинг и логирование
+### Monitoring and Logging
 
-В Grafana вы можете:
+In Grafana, you can:
 
-*   **Просматривать метрики**: Используйте источник данных `Prometheus` и импортируйте дашборды (например, ID `1860` для Kubernetes Cluster Monitoring, `6417` для Node Exporter Full).
-*   **Анализировать логи**: Используйте источник данных `Loki` в разделе `Explore`. Примеры запросов:
-    *   Логи API: `{app="api"}`
-    *   Логи агентов: `{app="agent"}`
+*   **View Metrics**: Use the `Prometheus` data source and import dashboards (e.g., ID `1860` for Kubernetes Cluster Monitoring, `6417` for Node Exporter Full).
+*   **Analyze Logs**: Use the `Loki` data source in the `Explore` section. Example queries:
+    *   API logs: `{app="api"}`
+    *   Agent logs: `{app="agent"}`
 
-## Диаграмма архитектуры
+## Architecture Diagram
 
-(Будет добавлено, возможно, с использованием Mermaid или других инструментов для визуализации архитектуры)
+(To be added, possibly using Mermaid or other visualization tools for architecture)
 
-## CI/CD схема (GitHub Actions + GitOps)
+## CI/CD Flow (GitHub Actions + GitOps)
 
-Проект использует полностью автоматизированный CI/CD пайплайн на базе GitHub Actions и GitOps с ArgoCD:
+The project uses a fully automated CI/CD pipeline based on GitHub Actions and GitOps with ArgoCD:
 
-1.  **Разработчик пушит код** в ветку `main`.
-2.  **GitHub Actions запускает workflow `ci-cd.yaml`:**
-    *   Собирает Docker-образы для UI, API и Agent.
-    *   Пушит собранные образы в GitHub Container Registry (GHCR).
-    *   Обновляет теги образов в `infra/k8s/base/kustomization.yaml` на текущий `git commit SHA`.
-    *   Делает `git commit` и `git push` обновленного `kustomization.yaml` обратно в репозиторий.
-3.  **ArgoCD отслеживает изменения** в Git-репозитории.
-4.  **ArgoCD автоматически синхронизирует** и развертывает новые версии приложений в Kubernetes, обеспечивая желаемое состояние кластера.
+1.  **Developer pushes code** to the `main` branch.
+2.  **GitHub Actions runs the `ci-cd.yaml` workflow:**
+    *   Builds Docker images for UI, API, and Agent.
+    *   Pushes the built images to GitHub Container Registry (GHCR).
+    *   Updates image tags in `infra/k8s/base/kustomization.yaml` to the current `git commit SHA`.
+    *   Performs a `git commit` and `git push` of the updated `kustomization.yaml` back to the repository.
+3.  **ArgoCD monitors changes** in the Git repository.
+4.  **ArgoCD automatically synchronizes** and deploys new application versions to Kubernetes, ensuring the desired cluster state.
 
-Это обеспечивает полностью автоматический и декларативный процесс развертывания, минимизируя ручные операции и ошибки.
+This ensures a fully automated and declarative deployment process, minimizing manual operations and errors.
 
-## Примеры команд
+## Example Commands
 
-*   **Запуск локально**: `docker compose up --build`
-*   **Применение Kustomize манифестов**: `kubectl apply -k infra/k8s/base`
-*   **Получение пароля ArgoCD**: `kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d`
-*   **Проброс порта UI (для отладки)**: `kubectl port-forward svc/ui-service 3000:3000`
-*   **Проверка подов**: `kubectl get pods -A`
+*   **Run locally**: `docker compose up --build`
+*   **Apply Kustomize manifests**: `kubectl apply -k infra/k8s/base`
+*   **Get ArgoCD password**: `kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d`
+*   **Port-forward UI (for debugging)**: `kubectl port-forward svc/ui-service 3000:3000`
+*   **Check pods**: `kubectl get pods -A`
