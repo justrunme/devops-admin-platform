@@ -4,6 +4,29 @@ resource "helm_release" "redis" {
   chart      = "redis"
   version    = "17.3.5"
   namespace  = "default"
+
+  set = [
+    {
+      name  = "auth.password"
+      value = "supersecurepassword"
+    },
+    {
+      name  = "master.persistence.enabled"
+      value = "false"
+    },
+    {
+      name  = "replica.persistence.enabled"
+      value = "false"
+    },
+    {
+      name  = "readinessProbe.initialDelaySeconds"
+      value = "30"
+    },
+    {
+      name  = "readinessProbe.periodSeconds"
+      value = "10"
+    }
+  ]
 }
 
 resource "helm_release" "api" {
