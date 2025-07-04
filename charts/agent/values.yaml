@@ -6,3 +6,7 @@ replicaCount: 1
 
 api:
   url: http://api-service:8080/ping
+
+serviceAccount:
+  create: true
+  name: ""

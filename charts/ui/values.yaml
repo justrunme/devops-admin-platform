@@ -13,3 +13,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+
+serviceAccount:
+  create: true
+  name: ""
