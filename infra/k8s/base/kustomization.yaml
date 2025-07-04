@@ -2,16 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - api/deployment.yaml
-  - api/service.yaml
-  - ui/deployment.yaml
-  - ui/service.yaml
-  - agent/deployment.yaml
-  - postgres/deployment.yaml
-  - postgres/service.yaml
-  - postgres/pvc.yaml
-  - redis/deployment.yaml
-  - redis/service.yaml
   - ingress.yaml
   - secrets.yaml
   - cluster-issuer.yaml
@@ -21,12 +11,12 @@ resources:
 images:
   - name: devops-admin-platform-ui
     newName: ghcr.io/${{ github.repository }}/ui
-    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
+    newTag: latest # This will be updated by CI/CD
 
   - name: devops-admin-platform-api
     newName: ghcr.io/${{ github.repository }}/api
-    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
+    newTag: latest # This will be updated by CI/CD
 
   - name: devops-admin-platform-agent
     newName: ghcr.io/${{ github.repository }}/agent
-    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
+    newTag: latest # This will be updated by CI/CD

@@ -12,3 +12,9 @@ ingress:
     - host: api.localhost
       paths:
         - /
+
+database:
+  url: postgres://app:secret@postgres-service:5432/app?sslmode=disable
+
+redis:
+  url: redis://redis-service:6379
