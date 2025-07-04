@@ -111,11 +111,11 @@ For quick local development and testing of all components without Kubernetes:
     *   **UI**: `http://localhost:3000`
     *   **API**: `http://localhost:8080` (for health check `http://localhost:8080/health`)
 
-### Deployment in Kubernetes (Minikube/Kind + GitOps)
+### Deployment in Kubernetes (Minikube/Kind + Terraform + GitOps)
 
-For full-fledged deployment using GitOps and all components:
+For full-fledged deployment using Terraform and GitOps:
 
-1.  **Install `kubectl`, `minikube` (or `kind`), and `helm`.**
+1.  **Install `kubectl`, `minikube` (or `kind`), `helm`, and `terraform`.**
 
 2.  **Start Minikube (if using):**
     ```bash
@@ -127,61 +127,25 @@ For full-fledged deployment using GitOps and all components:
     minikube addons enable ingress
     ```
 
-4.  **Install cert-manager:**
-    ```bash
-    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.0/cert-manager.yaml
-    ```
-    Wait for `cert-manager` pods to start (`kubectl get pods -n cert-manager`).
-
-5.  **Add Helm repositories:**
-    ```bash
-    helm repo add grafana https://grafana.github.io/helm-charts
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    helm repo update
-    ```
-
-6.  **Install Prometheus and Grafana:**
-    ```bash
-    helm install monitoring prometheus-community/kube-prometheus-stack \
-      --namespace monitoring --create-namespace \
-      --set grafana.ingress.enabled=true \
-      --set grafana.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-staging \
-      --set grafana.ingress.hosts[0]=grafana.devops.local \
-      --set grafana.ingress.tls[0].hosts[0]=grafana.devops.local \
-      --set grafana.ingress.tls[0].secretName=grafana-tls \
-      --set grafana.adminPassword=admin123
-    ```
-
-7.  **Install Loki and Promtail:**
-    ```bash
-    helm install loki grafana/loki-stack \
-      --namespace monitoring \
-      --set grafana.enabled=false
-    ```
-
-8.  **Install ArgoCD:**
-    ```bash
-    kubectl create namespace argocd
-    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-    ```
-    Wait for `argocd` pods to start (`kubectl get pods -n argocd`).
-
-9.  **Configure GitHub Container Registry (GHCR) and GitHub Secrets:**
+4.  **Configure GitHub Container Registry (GHCR) and GitHub Secrets:**
     *   In your GitHub repository (`Settings` -> `Actions` -> `General`), enable `Read and write permissions` for `Workflow permissions`.
     *   Create a Personal Access Token (PAT) with `write:packages`, `read:packages`, `workflow`, and `repo` permissions.
     *   Add the following secrets to your repository (`Settings` -> `Secrets and variables` -> `Actions` -> `New repository secret`):
         *   `GHCR_USERNAME`: Your GitHub username.
         *   `GHCR_TOKEN`: Your created PAT.
 
-10. **Update `infra/k8s/base/argocd-app.yaml`:**
+5.  **Update `infra/k8s/base/argocd-app.yaml`:**
     Replace `YOUR_USERNAME` and `YOUR_REPO` with your actual GitHub repository details.
 
-11. **Apply base application manifests (including ArgoCD Application and Ingresses):**
+6.  **Deploy infrastructure with Terraform:**
     ```bash
-    kubectl apply -k infra/k8s/base
+    cd terraform
+    terraform init
+    terraform apply -var="repo_url=https://github.com/youruser/yourrepo.git" # Replace with your actual repo URL
     ```
+    This will deploy cert-manager, Prometheus, Grafana, Loki, ArgoCD, and register your application with ArgoCD.
 
-12. **Add entries to your `/etc/hosts` file:**
+7.  **Add entries to your `/etc/hosts` file:**
     ```
     127.0.0.1 devops.local
     127.0.0.1 grafana.devops.local
@@ -189,7 +153,7 @@ For full-fledged deployment using GitOps and all components:
     127.0.0.1 prometheus.devops.local
     ```
 
-13. **Run `minikube tunnel` (if using Minikube) in a separate terminal:**
+8.  **Run `minikube tunnel` (if using Minikube) in a separate terminal:**
     ```bash
     minikube tunnel
     ```
@@ -250,7 +214,7 @@ This ensures a fully automated and declarative deployment process, minimizing ma
 ## Example Commands
 
 *   **Run locally**: `docker compose up --build`
-*   **Apply Kustomize manifests**: `kubectl apply -k infra/k8s/base`
+*   **Apply Kustomize manifests**: `kubectl apply -k infra/k8s/base` (This command is still relevant for applying base manifests if not using Terraform for the application itself, or for initial setup before ArgoCD takes over. I'll keep it for now, but might remove it if the user wants a purely Terraform-driven application deployment.)
 *   **Get ArgoCD password**: `kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d`
 *   **Port-forward UI (for debugging)**: `kubectl port-forward svc/ui-service 3000:3000`
 *   **Check pods**: `kubectl get pods -A`
