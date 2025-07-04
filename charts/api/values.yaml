@@ -1,6 +1,9 @@
 image:
   repository: ghcr.io/justrunme/devops-admin-platform/api
   tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
 
 service:
   type: ClusterIP
@@ -19,3 +22,19 @@ database:
 
 redis:
   url: redis://redis-service:6379
+
+serviceAccount:
+  create: true
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
