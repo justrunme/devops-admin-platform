@@ -4,35 +4,32 @@ resource "helm_release" "kube_prometheus" {
   repository = "prometheus-community"
   chart      = "kube-prometheus-stack"
 
-  set {
-    name  = "grafana.adminPassword"
-    value = "admin123"
-  }
-
-  set {
-    name  = "grafana.ingress.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "grafana.ingress.annotations.\"cert-manager\\.io/cluster-issuer\""
-    value = "letsencrypt-staging"
-  }
-
-  set {
-    name  = "grafana.ingress.hosts[0]"
-    value = "grafana.devops.local"
-  }
-
-  set {
-    name  = "grafana.ingress.tls[0].hosts[0]"
-    value = "grafana.devops.local"
-  }
-
-  set {
-    name  = "grafana.ingress.tls[0].secretName"
-    value = "grafana-tls"
-  }
+  set = [
+    {
+      name  = "grafana.adminPassword"
+      value = "admin123"
+    },
+    {
+      name  = "grafana.ingress.enabled"
+      value = "true"
+    },
+    {
+      name  = "grafana.ingress.annotations.\"cert-manager\\.io/cluster-issuer\""
+      value = "letsencrypt-staging"
+    },
+    {
+      name  = "grafana.ingress.hosts[0]"
+      value = "grafana.devops.local"
+    },
+    {
+      name  = "grafana.ingress.tls[0].hosts[0]"
+      value = "grafana.devops.local"
+    },
+    {
+      name  = "grafana.ingress.tls[0].secretName"
+      value = "grafana-tls"
+    }
+  ]
 
   depends_on = [helm_release.cert_manager]
 }
@@ -43,8 +40,11 @@ resource "helm_release" "loki" {
   repository = "grafana"
   chart      = "loki-stack"
 
-  set {
-    name  = "grafana.enabled"
-    value = "false"
-  }
+  set = [
+    {
+      name  = "grafana.enabled"
+      value = "false"
+    }
+  ]
 }
+
