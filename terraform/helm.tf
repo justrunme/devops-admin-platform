@@ -8,24 +8,24 @@ resource "helm_release" "redis" {
 
 resource "helm_release" "api" {
   name       = "api"
-  chart      = "./charts/api"
+  chart      = "../charts/api"
   namespace  = "default"
-  values     = [file("./charts/api/values.yaml")]
+  values     = [file("../charts/api/values.yaml")]
   depends_on = [helm_release.redis]
 }
 
 resource "helm_release" "ui" {
   name       = "ui"
-  chart      = "./charts/ui"
+  chart      = "../charts/ui"
   namespace  = "default"
-  values     = [file("./charts/ui/values.yaml")]
+  values     = [file("../charts/ui/values.yaml")]
   depends_on = [helm_release.api]
 }
 
 resource "helm_release" "agent" {
   name       = "agent"
-  chart      = "./charts/agent"
+  chart      = "../charts/agent"
   namespace  = "default"
-  values     = [file("./charts/agent/values.yaml")]
+  values     = [file("../charts/agent/values.yaml")]
   depends_on = [helm_release.api]
 }
