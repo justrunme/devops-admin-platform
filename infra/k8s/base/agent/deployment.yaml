@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-deployment
+  labels:
+    app: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      containers:
+      - name: agent
+        image: devops-admin-platform-agent:latest # Placeholder, will be replaced by CI/CD
+        env:
+        - name: API_URL
+          value: http://api-service:8080/ping # Assuming api-service is the service name for the API
