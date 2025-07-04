@@ -11,7 +11,8 @@ ingress:
   hosts:
     - host: api.localhost
       paths:
-        - /
+        - path: /
+          pathType: Prefix
 
 database:
   url: postgres://app:secret@postgres-service:5432/app?sslmode=disable
