@@ -21,12 +21,12 @@ resources:
 images:
   - name: devops-admin-platform-ui
     newName: ghcr.io/${{ github.repository }}/ui
-    newTag: 18cd73c7d184665ad6260c7c03f56f579caef67a
+    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
 
   - name: devops-admin-platform-api
     newName: ghcr.io/${{ github.repository }}/api
-    newTag: 18cd73c7d184665ad6260c7c03f56f579caef67a
+    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
 
   - name: devops-admin-platform-agent
     newName: ghcr.io/${{ github.repository }}/agent
-    newTag: 18cd73c7d184665ad6260c7c03f56f579caef67a
+    newTag: fc2dc41e87e6f9af90f8a707c373f9782a220fd2
