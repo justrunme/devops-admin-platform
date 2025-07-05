@@ -21,7 +21,7 @@ database:
   url: postgres://app:secret@postgres-service:5432/app?sslmode=disable
 
 redis:
-  url: redis://redis-master:6379
+  url: redis://:supersecurepassword@redis-master:6379
 
 serviceAccount:
   create: true
