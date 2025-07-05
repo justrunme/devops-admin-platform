@@ -50,18 +50,21 @@ func initPostgres() {
 }
 
 func initRedis() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:6379", getEnv("REDIS_HOST", "localhost")),
-		Password: "", 
-		DB:       0,
-	})
+    redisURL := getEnv("REDIS_URL", "redis://localhost:6379")
 
-	_, err := rdb.Ping(ctx).Result()
-	if err != nil {
-		log.Fatalf("Redis ping failed: %v", err)
-	}
+    opt, err := redis.ParseURL(redisURL)
+    if err != nil {
+        log.Fatalf("Failed to parse REDIS_URL: %v", err)
+    }
 
-	log.Println("Connected to Redis")
+    rdb = redis.NewClient(opt)
+
+    _, err = rdb.Ping(ctx).Result()
+    if err != nil {
+        log.Fatalf("Redis ping failed: %v", err)
+    }
+
+    log.Println("Connected to Redis")
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
