@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_USERNAME/YOUR_REPO.git # Замените на ваш репозиторий
+    repoURL: https://github.com/justrunme/devops-admin-platform.git
     targetRevision: main
     path: infra/k8s/base
   destination:

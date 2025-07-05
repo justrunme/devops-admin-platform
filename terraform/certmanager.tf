@@ -19,6 +19,9 @@ resource "helm_release" "cert_manager" {
 }
 
 resource "kubernetes_manifest" "letsencrypt_staging_cluster_issuer" {
+  field_manager {
+    force_conflicts = true
+  }
   depends_on = [
     helm_release.cert_manager
   ]

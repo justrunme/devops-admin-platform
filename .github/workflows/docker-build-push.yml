@@ -1,0 +1,50 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'ui/**'
+      - 'agent/**'
+      - '.github/workflows/**'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          push: true
+          tags: ghcr.io/justrunme/devops-admin-platform/api:latest
+
+      - name: Build and push UI image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ui
+          push: true
+          tags: ghcr.io/justrunme/devops-admin-platform/ui:latest
+
+      - name: Build and push Agent image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./agent
+          push: true
+          tags: ghcr.io/justrunme/devops-admin-platform/agent:latest

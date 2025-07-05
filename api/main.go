@@ -34,13 +34,7 @@ func main() {
 }
 
 func initPostgres() {
-	connStr := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s sslmode=disable",
-		getEnv("DB_HOST", "localhost"),
-		getEnv("DB_USER", "app"),
-		getEnv("DB_PASSWORD", "secret"),
-		getEnv("DB_NAME", "app"),
-	)
+	connStr := getEnv("DATABASE_URL", "postgres://app:secret@localhost:5432/app?sslmode=disable")
 
 	var err error
 	db, err = sql.Open("postgres", connStr)

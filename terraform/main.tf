@@ -20,6 +20,15 @@ resource "kubernetes_namespace" "argocd" {
   }
 }
 
+resource "kubernetes_service_account" "api" {
+  metadata {
+    name      = "api"
+    namespace = "default"
+  }
+}
+
+
+
 resource "helm_release" "argocd" {
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
@@ -35,9 +44,15 @@ resource "helm_release" "argocd" {
   ]
   depends_on = [null_resource.install_argocd_crds]
   wait             = true # Ensure ArgoCD is fully deployed before proceeding
+  timeout          = 600
+  atomic           = true
+  cleanup_on_fail  = true
 }
 
 resource "kubernetes_manifest" "argocd_app" {
+  field_manager {
+    force_conflicts = true
+  }
   depends_on = [
     helm_release.argocd
   ]
