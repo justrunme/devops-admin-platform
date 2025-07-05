@@ -5,8 +5,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/health',
-        destination: 'http://api:8080/health',
+        source: '/api/:path*',
+        destination: 'http://api-service:8080/api/:path*',
       },
     ];
   },
