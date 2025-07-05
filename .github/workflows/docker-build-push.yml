@@ -56,13 +56,18 @@ jobs:
         sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/ui/values.yaml
         sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/agent/values.yaml
 
-    - name: Commit and push changes directly to main
+    - name: Commit and push if changes exist
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
-        git add infra/k8s/base/kustomization.yaml charts/*/values.yaml || true
-        git commit -m "chore(ci): update image tags to ${{ steps.extract_sha.outputs.short_sha }}" || echo "No changes to commit" || echo "No changes to commit"
-        git pull --ff-only || true
-        git push origin main
+
+        git add charts/*/values.yaml infra/k8s/base/kustomization.yaml
+
+        if git diff --cached --quiet; then
+          echo "✅ Nothing to commit"
+        else
+          git commit -m "ci: update image tags to ${{ steps.extract_sha.outputs.short_sha }}"
+          git push origin main
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
