@@ -10,7 +10,6 @@ jobs:
     permissions:
       contents: write
       packages: write
-      pull-requests: write
 
     steps:
     - name: Checkout
@@ -57,10 +56,13 @@ jobs:
         sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/ui/values.yaml
         sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/agent/values.yaml
 
-    - name: Create Pull Request with tag updates
-      uses: peter-evans/create-pull-request@v5
-      with:
-        commit-message: "chore(ci): update image tags to ${{ steps.extract_sha.outputs.short_sha }}"
-        branch: "ci/update-image-tags"
-        title: "Update image tags to ${{ steps.extract_sha.outputs.short_sha }}"
-        body: "This PR updates kustomization.yaml and values.yaml to use the new image tag."
+    - name: Commit and push changes directly to main
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add infra/k8s/base/kustomization.yaml charts/*/values.yaml
+        git commit -m "chore(ci): update image tags to ${{ steps.extract_sha.outputs.short_sha }}" || echo "No changes to commit"
+        git pull --rebase
+        git push origin main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
