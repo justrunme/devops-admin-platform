@@ -60,7 +60,7 @@ jobs:
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
-        git add infra/k8s/base/kustomization.yaml charts/*/values.yaml
+        git add infra/k8s/base/kustomization.yaml charts/*/values.yaml || true
         git commit -m "chore(ci): update image tags to ${{ steps.extract_sha.outputs.short_sha }}" || echo "No changes to commit" || echo "No changes to commit"
         git pull --ff-only || true
         git push origin main
