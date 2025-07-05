@@ -1,0 +1,8 @@
+# Terraform artifacts
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# Node.js
+node_modules/

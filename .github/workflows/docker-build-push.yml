@@ -1,4 +1,4 @@
-name: Build and Push Docker Images
+name: Build, Push and Update Images
 
 on:
   push:
@@ -12,39 +12,62 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read
+      contents: write  # ⬅️ нужно для автокоммита
       packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Extract short SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Docker Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push API image
+      - name: Build & push API image
         uses: docker/build-push-action@v5
         with:
           context: ./api
           push: true
-          tags: ghcr.io/justrunme/devops-admin-platform/api:latest
+          tags: |
+            ghcr.io/justrunme/devops-admin-platform/api:latest
+            ghcr.io/justrunme/devops-admin-platform/api:${{ env.SHORT_SHA }}
 
-      - name: Build and push UI image
+      - name: Build & push UI image
         uses: docker/build-push-action@v5
         with:
           context: ./ui
           push: true
-          tags: ghcr.io/justrunme/devops-admin-platform/ui:latest
+          tags: |
+            ghcr.io/justrunme/devops-admin-platform/ui:latest
+            ghcr.io/justrunme/devops-admin-platform/ui:${{ env.SHORT_SHA }}
 
-      - name: Build and push Agent image
+      - name: Build & push Agent image
         uses: docker/build-push-action@v5
         with:
           context: ./agent
           push: true
-          tags: ghcr.io/justrunme/devops-admin-platform/agent:latest
+          tags: |
+            ghcr.io/justrunme/devops-admin-platform/agent:latest
+            ghcr.io/justrunme/devops-admin-platform/agent:${{ env.SHORT_SHA }}
+
+      - name: Update Helm values with new image tags
+        run: |
+          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/api/values.yaml
+          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/ui/values.yaml
+          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/agent/values.yaml
+
+      - name: Commit and push updated Helm values
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add charts/*/values.yaml
+          git commit -m "chore: update image tags to $SHORT_SHA"
+          git push
