@@ -1,74 +1,66 @@
-name: Build, Push and Update Images
+name: Build & Push Docker Images + Update Kustomization
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'api/**'
-      - 'ui/**'
-      - 'agent/**'
-      - '.github/workflows/**'
 
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # ⬅️ нужно для автокоммита
+      contents: write
       packages: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Extract short SHA
-        id: vars
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+    - name: Extract short SHA
+      id: extract_sha
+      run: echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Docker Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push API image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./api
-          push: true
-          tags: |
-            ghcr.io/justrunme/devops-admin-platform/api:latest
-            ghcr.io/justrunme/devops-admin-platform/api:${{ env.SHORT_SHA }}
+    - name: Build and push API
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/api:latest -t ghcr.io/${{ github.repository }}/api:${{ steps.extract_sha.outputs.short_sha }} ./api
+        docker push ghcr.io/${{ github.repository }}/api:latest
+        docker push ghcr.io/${{ github.repository }}/api:${{ steps.extract_sha.outputs.short_sha }}
 
-      - name: Build & push UI image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./ui
-          push: true
-          tags: |
-            ghcr.io/justrunme/devops-admin-platform/ui:latest
-            ghcr.io/justrunme/devops-admin-platform/ui:${{ env.SHORT_SHA }}
+    - name: Build and push UI
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/ui:latest -t ghcr.io/${{ github.repository }}/ui:${{ steps.extract_sha.outputs.short_sha }} ./ui
+        docker push ghcr.io/${{ github.repository }}/ui:latest
+        docker push ghcr.io/${{ github.repository }}/ui:${{ steps.extract_sha.outputs.short_sha }}
 
-      - name: Build & push Agent image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./agent
-          push: true
-          tags: |
-            ghcr.io/justrunme/devops-admin-platform/agent:latest
-            ghcr.io/justrunme/devops-admin-platform/agent:${{ env.SHORT_SHA }}
+    - name: Build and push Agent
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/agent:latest -t ghcr.io/${{ github.repository }}/agent:${{ steps.extract_sha.outputs.short_sha }} ./agent
+        docker push ghcr.io/${{ github.repository }}/agent:latest
+        docker push ghcr.io/${{ github.repository }}/agent:${{ steps.extract_sha.outputs.short_sha }}
 
-      - name: Update Helm values with new image tags
-        run: |
-          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/api/values.yaml
-          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/ui/values.yaml
-          sed -i "s|tag: .*|tag: \"${SHORT_SHA}\"|" charts/agent/values.yaml
+    - name: Update kustomization.yaml tags
+      run: |
+        sed -i "/name: devops-admin-platform-ui/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
+        sed -i "/name: devops-admin-platform-api/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
+        sed -i "/name: devops-admin-platform-agent/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
 
-      - name: Commit and push updated Helm values
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add charts/*/values.yaml
-          git commit -m "chore: update image tags to $SHORT_SHA"
-          git pull --rebase origin main
-          git push
+    - name: Update values.yaml image tags
+      run: |
+        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/api/values.yaml
+        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/ui/values.yaml
+        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/agent/values.yaml
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add infra/k8s/base/kustomization.yaml charts/*/values.yaml
+        git commit -m "chore(ci): update image tags to ${{ steps.extract_sha.outputs.short_sha }}"
+        git pull --rebase
+        git push
