@@ -6,6 +6,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.9
+	k8s.io/client-go v0.28.0
 )
 
 require (
