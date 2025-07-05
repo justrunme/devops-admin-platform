@@ -70,4 +70,5 @@ jobs:
           git config user.email "actions@github.com"
           git add charts/*/values.yaml
           git commit -m "chore: update image tags to $SHORT_SHA"
+          git pull --rebase origin main
           git push
