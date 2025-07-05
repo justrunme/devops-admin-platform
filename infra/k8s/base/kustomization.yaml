@@ -11,12 +11,12 @@ resources:
 images:
   - name: devops-admin-platform-ui
     newName: ghcr.io/justrunme/devops-admin-platform/ui
-    newTag: b94d93b7ea1e1bf8e47bfea665c8c9ebef5168c3
+    newTag: acfd293
 
   - name: devops-admin-platform-api
     newName: ghcr.io/justrunme/devops-admin-platform/api
-    newTag: b94d93b7ea1e1bf8e47bfea665c8c9ebef5168c3
+    newTag: acfd293
 
   - name: devops-admin-platform-agent
     newName: ghcr.io/justrunme/devops-admin-platform/agent
-    newTag: b94d93b7ea1e1bf8e47bfea665c8c9ebef5168c3
+    newTag: acfd293
