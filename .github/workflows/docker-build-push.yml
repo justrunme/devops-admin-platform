@@ -1,73 +1,73 @@
-name: Build & Push Docker Images + Update Kustomization
+name: Build and Push Docker Images
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-push:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       packages: write
+      pull-requests: write
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Extract short SHA
-      id: extract_sha
-      run: echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Git short SHA
+        id: vars
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-    - name: Build and push API
-      run: |
-        docker build -t ghcr.io/${{ github.repository }}/api:latest -t ghcr.io/${{ github.repository }}/api:${{ steps.extract_sha.outputs.short_sha }} ./api
-        docker push ghcr.io/${{ github.repository }}/api:latest
-        docker push ghcr.io/${{ github.repository }}/api:${{ steps.extract_sha.outputs.short_sha }}
+      - name: Build and push UI image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/ui:${SHORT_SHA} ./ui
+          docker tag ghcr.io/${{ github.repository }}/ui:${SHORT_SHA} ghcr.io/${{ github.repository }}/ui:latest
+          docker push ghcr.io/${{ github.repository }}/ui:${SHORT_SHA}
+          docker push ghcr.io/${{ github.repository }}/ui:latest
 
-    - name: Build and push UI
-      run: |
-        docker build -t ghcr.io/${{ github.repository }}/ui:latest -t ghcr.io/${{ github.repository }}/ui:${{ steps.extract_sha.outputs.short_sha }} ./ui
-        docker push ghcr.io/${{ github.repository }}/ui:latest
-        docker push ghcr.io/${{ github.repository }}/ui:${{ steps.extract_sha.outputs.short_sha }}
+      - name: Build and push API image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/api:${SHORT_SHA} ./api
+          docker tag ghcr.io/${{ github.repository }}/api:${SHORT_SHA} ghcr.io/${{ github.repository }}/api:latest
+          docker push ghcr.io/${{ github.repository }}/api:${SHORT_SHA}
+          docker push ghcr.io/${{ github.repository }}/api:latest
 
-    - name: Build and push Agent
-      run: |
-        docker build -t ghcr.io/${{ github.repository }}/agent:latest -t ghcr.io/${{ github.repository }}/agent:${{ steps.extract_sha.outputs.short_sha }} ./agent
-        docker push ghcr.io/${{ github.repository }}/agent:latest
-        docker push ghcr.io/${{ github.repository }}/agent:${{ steps.extract_sha.outputs.short_sha }}
+      - name: Build and push Agent image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/agent:${SHORT_SHA} ./agent
+          docker tag ghcr.io/${{ github.repository }}/agent:${SHORT_SHA} ghcr.io/${{ github.repository }}/agent:latest
+          docker push ghcr.io/${{ github.repository }}/agent:${SHORT_SHA}
+          docker push ghcr.io/${{ github.repository }}/agent:latest
 
-    - name: Update kustomization.yaml tags
-      run: |
-        sed -i "/name: devops-admin-platform-ui/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
-        sed -i "/name: devops-admin-platform-api/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
-        sed -i "/name: devops-admin-platform-agent/,/newTag:/s/newTag: .*/newTag: ${{ steps.extract_sha.outputs.short_sha }}/" infra/k8s/base/kustomization.yaml
+      - name: Update image tags in values.yaml and kustomization.yaml
+        run: |
+          sed -i "s|newTag: .*|newTag: ${SHORT_SHA}|g" infra/k8s/base/kustomization.yaml
+          sed -i "s|tag: .*|tag: ${SHORT_SHA}|g" charts/ui/values.yaml
+          sed -i "s|tag: .*|tag: ${SHORT_SHA}|g" charts/api/values.yaml
+          sed -i "s|tag: .*|tag: ${SHORT_SHA}|g" charts/agent/values.yaml
 
-    - name: Update values.yaml image tags
-      run: |
-        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/api/values.yaml
-        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/ui/values.yaml
-        sed -i "s|tag: .*|tag: ${{ steps.extract_sha.outputs.short_sha }}|" charts/agent/values.yaml
+      - name: Commit and push updated tags
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-    - name: Commit and push if there are changes
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+          git add charts/*/values.yaml infra/k8s/base/kustomization.yaml || true
 
-        git add charts/*/values.yaml infra/k8s/base/kustomization.yaml || true
-
-        if git diff --cached --quiet; then
-          echo "✅ Nothing to commit"
-        else
-          git commit -m "ci: update image tags to ${{ steps.extract_sha.outputs.short_sha }}"
-          git push origin main
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          if git diff --cached --quiet; then
+            echo "✅ No changes — nothing to commit."
+          else
+            git commit -m "ci: update image tags to ${SHORT_SHA}"
+            git pull --rebase
+            git push origin main
+          fi
