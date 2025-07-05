@@ -49,17 +49,16 @@ func initPostgres() {
 }
 
 func initRedis() {
-    redisURL := getEnv("REDIS_URL", "redis://localhost:6379")
+    url := getEnv("REDIS_URL", "redis://localhost:6379")
 
-    opt, err := redis.ParseURL(redisURL)
+    opt, err := redis.ParseURL(url)
     if err != nil {
-        log.Fatalf("Failed to parse REDIS_URL: %v", err)
+        log.Fatalf("Failed to parse Redis URL: %v", err)
     }
 
     rdb = redis.NewClient(opt)
 
-    _, err = rdb.Ping(ctx).Result()
-    if err != nil {
+    if _, err := rdb.Ping(ctx).Result(); err != nil {
         log.Fatalf("Redis ping failed: %v", err)
     }
 
