@@ -1,0 +1,69 @@
+name: Terraform Platform Deployment Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  terraform-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      KUBECONFIG: /home/runner/.kube/config
+      TF_INPUT: false
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name:  Setup prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+          curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+          chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name:  Start Minikube
+        run: |
+          minikube start --driver=docker --kubernetes-version=v1.27.3
+          minikube status
+          kubectl get nodes
+
+      - name:  Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name:  Terraform Init
+        run: terraform init
+
+      - name:  Terraform Plan
+        run: terraform plan -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+
+      - name: ✅ Terraform Apply
+        run: terraform apply -auto-approve -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+
+      - name: ️ Verify ArgoCD Application
+        run: |
+          kubectl get application -n argocd devops-platform
+          kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=120s
+
+      - name: ✅ Check Pods Health
+        run: |
+          kubectl get pods -A
+          kubectl get deployment -A
+          kubectl rollout status deployment/ui --timeout=120s
+          kubectl rollout status deployment/api --timeout=120s
+          kubectl rollout status deployment/agent --timeout=120s
+
+      - name:  Verify HTTP endpoints
+        run: |
+          kubectl port-forward svc/ui 3000:3000 &
+          kubectl port-forward svc/api 8080:8080 &
+          sleep 10
+          curl -f http://localhost:3000
+          curl -f http://localhost:8080/api/status
