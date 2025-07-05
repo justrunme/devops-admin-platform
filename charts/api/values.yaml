@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/justrunme/devops-admin-platform/api
-  tag: latest
+  tag: "6c75da6"
   pullPolicy: IfNotPresent
 
 replicaCount: 1
