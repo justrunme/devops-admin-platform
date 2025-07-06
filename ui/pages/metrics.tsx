@@ -1,27 +1,66 @@
-import Link from 'next/link'
+import Layout from '../components/Layout'
+import Head from 'next/head'
 
 export default function MetricsPage() {
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4"> Metrics & Dashboards</h2>
-      <ul className="list-disc pl-5 space-y-2">
-        <li>
-          <a className="text-blue-600 underline" href="/grafana/d/uU7wFhMZk/node-exporter-full?orgId=1" target="_blank" rel="noreferrer">
-             CPU / Memory Dashboard (Node Exporter)
-          </a>
-        </li>
-        <li>
-          <a className="text-blue-600 underline" href="/grafana/d/k8s-logs/logs?orgId=1" target="_blank" rel="noreferrer">
-             Loki Logs Dashboard
-          </a>
-        </li>
-      </ul>
+    <Layout>
+      <Head>
+        <title>Metrics | DevOps Admin Panel</title>
+      </Head>
+      <div className="p-8 space-y-6">
+        <h1 className="text-3xl font-bold"> Cluster Metrics</h1>
+        <p className="text-gray-600">Real-time metrics via Grafana dashboards embedded below.</p>
 
-      <p style={{ marginTop: '2rem' }}>
-        ℹ️ Если Grafana не открывается — убедитесь, что порт 3000 проброшен:
-        <br />
-        <code>kubectl port-forward svc/grafana -n monitoring 3000:80</code>
-      </p>
-    </div>
+        <div>
+          <h2 className="text-xl font-semibold mb-2"> CPU Usage by Node</h2>
+          <iframe
+            src="http://localhost:3001/d-solo/k8s-cluster/kubernetes-cluster-monitoring?orgId=1&panelId=2&refresh=30s"
+            width="100%"
+            height="300"
+            frameBorder="0"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2"> Memory Usage by Node</h2>
+          <iframe
+            src="http://localhost:3001/d-solo/k8s-cluster/kubernetes-cluster-monitoring?orgId=1&panelId=4&refresh=30s"
+            width="100%"
+            height="300"
+            frameBorder="0"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2"> Pod Status</h2>
+          <iframe
+            src="http://localhost:3001/d-solo/k8s-cluster/kubernetes-cluster-monitoring?orgId=1&panelId=6&refresh=30s"
+            width="100%"
+            height="300"
+            frameBorder="0"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2"> Logs from Namespace `default`</h2>
+          <iframe
+            src="http://localhost:3001/d-solo/loki-logs/loki-logs-dashboard?orgId=1&panelId=1&refresh=30s"
+            width="100%"
+            height="300"
+            frameBorder="0"
+          />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2"> Active Alerts</h2>
+          <iframe
+            src="http://localhost:3001/d-solo/alerts/alerts-overview?orgId=1&panelId=0&refresh=30s"
+            width="100%"
+            height="300"
+            frameBorder="0"
+          />
+        </div>
+      </div>
+    </Layout>
   )
 }
