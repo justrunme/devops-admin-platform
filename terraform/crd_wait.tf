@@ -5,9 +5,7 @@ resource "null_resource" "wait_for_cert_manager_crds" {
     command = <<EOT
       echo "⏳ Waiting for ClusterIssuer CRD to become available..."
       for i in {1..30}; do
-        kubectl get crd clusterissuers.cert-manager.io >/dev/null 2>&1 && \
-        kubectl get crd certificaterequests.cert-manager.io >/dev/null 2>&1 && \
-        break
+        kubectl wait --for condition=Established crd/clusterissuers.cert-manager.io --timeout=120s >/dev/null 2>&1 &&         kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=120s >/dev/null 2>&1 &&         break
         echo "Waiting... ($i)"
         sleep 2
       done
@@ -28,7 +26,7 @@ resource "null_resource" "wait_for_argocd_crds" {
     command = <<EOT
       echo "⏳ Waiting for ArgoCD CRDs..."
       for i in {1..30}; do
-        kubectl get crd applications.argoproj.io >/dev/null 2>&1 && break
+        kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=120s >/dev/null 2>&1 && break
         echo "Waiting... ($i)"
         sleep 2
       done
