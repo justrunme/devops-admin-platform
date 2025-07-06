@@ -54,7 +54,8 @@ resource "kubernetes_manifest" "argocd_app" {
     force_conflicts = true
   }
   depends_on = [
-    helm_release.argocd
+    helm_release.argocd,
+    null_resource.wait_for_argocd_crds
   ]
 
   manifest = yamldecode(templatefile("${path.module}/argocd-app.yaml.tmpl", {
