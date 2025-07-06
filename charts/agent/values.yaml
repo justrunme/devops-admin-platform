@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/justrunme/devops-admin-platform/agent
-  tag: d406c1af74ec3af2efb9657ddfc0702dfbf69532
+  tag: e812c43741cd6af8586a7db053094b1f624d353d
 
 replicaCount: 1
 
