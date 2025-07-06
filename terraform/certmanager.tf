@@ -23,7 +23,8 @@ resource "kubernetes_manifest" "letsencrypt_staging_cluster_issuer" {
     force_conflicts = true
   }
   depends_on = [
-    helm_release.cert_manager
+    helm_release.cert_manager,
+    null_resource.wait_for_cert_manager_crds
   ]
 
   manifest = yamldecode(file("${path.module}/manifests/cluster-issuer-staging.yaml"))
