@@ -32,6 +32,9 @@ func main() {
 	r.HandleFunc("/api/nodes", handlers.GetNodes).Methods("GET")
 	r.HandleFunc("/api/metrics", handlers.GetMetrics).Methods("GET")
 	r.HandleFunc("/api/status", handlers.GetSystemStatus).Methods("GET")
+	r.HandleFunc("/api/agents/{name}/restart", handlers.RestartAgent).Methods("POST")
+	r.HandleFunc("/api/agents/{name}/disable", handlers.DisableAgent).Methods("POST")
+	r.HandleFunc("/api/alerts/test", handlers.SendTestAlert).Methods("POST")
 
 	// Middleware CORS
 	handler := cors.Default().Handler(r)

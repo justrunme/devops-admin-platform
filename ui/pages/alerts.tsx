@@ -21,6 +21,18 @@ export default function Alerts() {
           ))}
         </ul>
       )}
+      <button
+        onClick={sendAlert}
+        className="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Send Test Alert
+      </button>
     </div>
   )
+}
+
+const sendAlert = async () => {
+  const res = await fetch("/api/alerts/test", { method: "POST" })
+  const msg = await res.json()
+  alert(msg.message)
 }

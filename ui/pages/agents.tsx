@@ -93,17 +93,17 @@ export default function AgentsPage() {
                   <td className="p-3 text-sm text-gray-500">{new Date(agent.last_seen).toLocaleString()}</td>
                   <td className="p-3">
                     <button
-                      onClick={() => reboot(agent.hostname)}
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm mr-2"
-                    >
-                      Reboot
-                    </button>
-                    <button
-                      onClick={() => disable(agent.hostname)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
-                    >
-                      Disable
-                    </button>
+                    onClick={() => reboot(agent.hostname)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm mr-2"
+                  >
+                    Reboot
+                  </button>
+                  <button
+                    onClick={() => disable(agent.hostname)}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
+                  >
+                    Disable
+                  </button>
                   </td>
                 </tr>
               ))}
