@@ -80,7 +80,7 @@ resource "helm_release" "api" {
   namespace  = "default"
   values     = [file("../charts/api/values.yaml")]
   depends_on = [helm_release.redis, kubernetes_service_account.api, helm_release.postgresql]
-  timeout    = 600
+  timeout    = 900
   atomic     = true
   cleanup_on_fail = true
 

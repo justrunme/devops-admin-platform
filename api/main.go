@@ -35,6 +35,7 @@ func main() {
 	r.HandleFunc("/api/agents/{name}/restart", handlers.RestartAgent).Methods("POST")
 	r.HandleFunc("/api/agents/{name}/disable", handlers.DisableAgent).Methods("POST")
 	r.HandleFunc("/api/alerts/test", handlers.SendTestAlert).Methods("POST")
+	r.HandleFunc("/health", handlers.HealthHandler).Methods("GET")
 
 	// Middleware CORS
 	handler := cors.Default().Handler(r)
