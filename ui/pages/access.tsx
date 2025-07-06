@@ -49,7 +49,7 @@ export default function AccessPage() {
       <div className="mt-6 p-4 bg-gray-50 rounded-md shadow">
         <h2 className="font-semibold mb-2"> Grafana Password (CLI)</h2>
         <code className="text-xs block bg-white p-2 rounded border">
-          kubectl get secret -n monitoring monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+          {`kubectl get secret -n monitoring monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode`}
         </code>
       </div>
     </Layout>
