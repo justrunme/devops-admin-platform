@@ -28,6 +28,14 @@ resource "helm_release" "kube_prometheus" {
     {
       name  = "grafana.ingress.tls[0].secretName"
       value = "grafana-tls"
+    },
+    {
+      name  = "prometheus.ingress.enabled"
+      value = "true"
+    },
+    {
+      name  = "prometheus.ingress.hosts[0]"
+      value = "prometheus.localhost"
     }
   ]
 

@@ -9,6 +9,7 @@ const navItems = [
   { name: 'Agents', href: '/agents' },
   { name: 'Metrics', href: '/metrics' },
   { name: 'Status', href: '/status' },
+  { name: 'Access', href: '/access' },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
