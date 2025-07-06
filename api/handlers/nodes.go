@@ -4,17 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
-
-var clientset *kubernetes.Clientset
 
 // NodeInfo represents the simplified structure of node information for the UI
 type NodeInfo struct {
@@ -24,21 +19,6 @@ type NodeInfo struct {
 	CreatedAt string `json:"createdAt"`
 	CPU       string `json:"cpu"`
 	Memory    string `json:"memory"`
-}
-
-func init() {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		log.Fatalf("Failed to create in-cluster config: %v", err)
-	}
-	// creates the clientset
-	clientset, err = kubernetes.NewForConfig(config)
-	
-	if err != nil {
-		log.Fatalf("Failed to create clientset: %v", err)
-	}
-	log.Println("Kubernetes client initialized")
 }
 
 // GetNodes fetches and returns a list of Kubernetes nodes
