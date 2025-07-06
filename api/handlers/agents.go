@@ -16,23 +16,6 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-var clientset *kubernetes.Clientset
-
-func init() {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		log.Fatalf("Failed to create in-cluster config: %v", err)
-	}
-	// creates the clientset
-	clientset, err = kubernetes.NewForConfig(config)
-	
-	if err != nil {
-		log.Fatalf("Failed to create clientset: %v", err)
-	}
-	log.Println("Kubernetes client initialized")
-}
-
 // AgentInfo represents the structure of agent information
 type AgentInfo struct {
 	Hostname string `json:"hostname"`
@@ -96,11 +79,22 @@ func RestartAgent(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("⏳ Restart request received for agent: %s", name)
 
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create in-cluster config: %v", err), http.StatusInternalServerError)
+		return
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create clientset: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	// Get the agent pod name from the database (assuming hostname is the pod name)
 	// In a real scenario, you might store pod names or labels in the DB
 	podName := name // For simplicity, assuming hostname is the pod name
 
-	err := clientset.CoreV1().Pods("default").Delete(context.Background(), podName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Pods("default").Delete(context.Background(), podName, metav1.DeleteOptions{})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to delete agent pod %s: %v", podName, err), http.StatusInternalServerError)
 		return
@@ -117,11 +111,22 @@ func DisableAgent(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf(" Disable request for agent: %s", name)
 
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create in-cluster config: %v", err), http.StatusInternalServerError)
+		return
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to create clientset: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	// In a real scenario, you might update a status in the DB or send a command to the agent
 	// For now, we'll simulate disabling by deleting the pod
 	podName := name // For simplicity, assuming hostname is the pod name
 
-	err := clientset.CoreV1().Pods("default").Delete(context.Background(), podName, metav1.DeleteOptions{})
+	err = clientset.CoreV1().Pods("default").Delete(context.Background(), podName, metav1.DeleteOptions{})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to disable agent %s: %v", podName, err), http.StatusInternalServerError)
 		return
