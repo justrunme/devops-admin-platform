@@ -39,13 +39,13 @@ jobs:
           terraform_version: 1.6.6
 
       - name:  Terraform Init
-        run: terraform init
+        run: cd terraform && terraform init
 
       - name:  Terraform Plan
-        run: terraform plan -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+        run: cd terraform && terraform plan -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
 
       - name: ✅ Terraform Apply
-        run: terraform apply -auto-approve -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+        run: cd terraform && terraform apply -auto-approve -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
 
       - name: ️ Verify ArgoCD Application
         run: |
