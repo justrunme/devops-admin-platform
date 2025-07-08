@@ -1,38 +1,38 @@
-import { useEffect, useState } from 'react'
+import Layout from '../components/Layout'
 
 export default function Alerts() {
-  const [alerts, setAlerts] = useState<string[]>([])
-
-  useEffect(() => {
-    fetch('/api/alerts')
-      .then(res => res.json())
-      .then(data => setAlerts(data.alerts || []))
-  }, [])
+  // Пример данных, замени на реальные
+  const alerts = [
+    { message: 'Node not ready', severity: 'critical', time: '2024-07-08 12:00' },
+    { message: 'Disk usage high', severity: 'warning', time: '2024-07-08 11:50' },
+  ];
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">⚠️ Active Alerts</h2>
-      {alerts.length === 0 ? (
-        <p className="text-green-600">All systems operational ✅</p>
-      ) : (
-        <ul className="list-disc pl-5">
-          {alerts.map((alert, i) => (
-            <li key={i} className="text-red-600">{alert}</li>
-          ))}
-        </ul>
-      )}
-      <button
-        onClick={sendAlert}
-        className="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Send Test Alert
-      </button>
-    </div>
+    <Layout>
+      <h1 className="text-2xl font-bold mb-4 text-white drop-shadow">Alerts</h1>
+      <div className="overflow-x-auto rounded-xl shadow-xl bg-gradient-to-br from-blue-400 via-indigo-400 to-pink-400 dark:from-blue-900 dark:to-indigo-900 p-6 mb-6">
+        <table className="min-w-full text-sm text-white">
+          <thead className="bg-blue-900/60">
+            <tr>
+              <th className="p-3 text-left">Message</th>
+              <th className="p-3 text-left">Severity</th>
+              <th className="p-3 text-left">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {alerts.map((alert, i) => (
+              <tr key={i} className="border-b border-blue-200/30">
+                <td className="p-3">{alert.message}</td>
+                <td className={`p-3 font-semibold ${
+                  alert.severity === 'critical' ? 'text-red-200' :
+                  alert.severity === 'warning' ? 'text-yellow-200' : 'text-blue-200'
+                }`}>{alert.severity}</td>
+                <td className="p-3">{alert.time}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Layout>
   )
-}
-
-const sendAlert = async () => {
-  const res = await fetch("/api/alerts/test", { method: "POST" })
-  const msg = await res.json()
-  alert(msg.message)
 }

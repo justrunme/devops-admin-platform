@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import NavBar from './NavBar'
 
 const navItems = [
   { name: 'Nodes', href: '/nodes' },
@@ -15,69 +16,31 @@ const navItems = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [nodes, setNodes] = useState<any[] | null>(null)
+
+  useEffect(() => {
+    // fetch('/api/nodes').then(...)
+    setNodes([
+      { name: 'node-1', status: 'Ready', version: 'v1.28.0', cpu: '4', mem: '16Gi' },
+      // ...
+    ])
+  }, [])
+
+  if (nodes === null) {
+    return <div className="text-center text-white">Загрузка...</div>
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <span className="text-xl font-bold text-blue-600 cursor-pointer">
-                  ️ DevOps Admin
-                </span>
-              </Link>
-              <div className="hidden md:flex space-x-4">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`${
-                      pathname === item.href
-                        ? 'text-blue-600 font-semibold'
-                        : 'text-gray-700'
-                    } hover:text-blue-500`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:hidden">
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="text-gray-700 focus:outline-none"
-              >
-                ☰
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-indigo-100 to-pink-100 dark:from-gray-900 dark:to-gray-800">
+      <NavBar />
+      <main className="flex-1 w-full max-w-6xl mx-auto px-2 py-6">{children}</main>
+      {nodes.length > 0 ? (
+        <div className="overflow-x-auto ...">
+          <table>...</table>
         </div>
-
-        {menuOpen && (
-          <div className="md:hidden px-4 pb-4 space-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                className={`block ${
-                  pathname === item.href
-                    ? 'text-blue-600 font-semibold'
-                    : 'text-gray-700'
-                } hover:text-blue-500`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        )}
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {children}
-      </main>
+      ) : (
+        <div className="text-center text-white">Загрузка...</div>
+      )}
     </div>
   )
 }

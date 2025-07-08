@@ -14,7 +14,7 @@ var ctx = context.Background()
 func ConnectRedis() error {
 	redisURL := os.Getenv("REDIS_URL")
 	if redisURL == "" {
-		redisURL = "redis://:supersecurepassword@redis-master:6379"
+		redisURL = "redis://redis:6379"
 	}
 
 	opt, err := redis.ParseURL(redisURL)
