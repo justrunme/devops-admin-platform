@@ -12,7 +12,7 @@ import (
 
 var clientset *kubernetes.Clientset
 
-func init() {
+func InitKubeClient() {
 	// try to create in-cluster config first
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -20,15 +20,16 @@ func init() {
 		kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
-			log.Fatalf("Failed to create Kubernetes config: %v", err)
+			log.Printf("Failed to create Kubernetes config: %v", err)
+			return
 		}
 	}
 
 	// creates the clientset
 	clientset, err = kubernetes.NewForConfig(config)
-	
 	if err != nil {
-		log.Fatalf("Failed to create clientset: %v", err)
+		log.Printf("Failed to create clientset: %v", err)
+		return
 	}
 	log.Println("Kubernetes client initialized in handlers package")
 }

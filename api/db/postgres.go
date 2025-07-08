@@ -14,7 +14,7 @@ var DB *sql.DB
 func ConnectPostgres() error {
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		connStr = "postgres://app:secret@postgres-service:5432/app?sslmode=disable"
+		connStr = "postgres://app:secret@db:5432/app?sslmode=disable"
 	}
 
 	var err error
