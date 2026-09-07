@@ -2,6 +2,10 @@
 
 [![Build and Push Docker Images](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml)
 
+[![Case study](https://img.shields.io/badge/case-justrunme.com-111111)](https://justrunme.com/cases/developer-platform-interface/)
+
+Case study: [Developer Platform Interface](https://justrunme.com/cases/developer-platform-interface/) · [Andrey Lesnikov](https://justrunme.com/)
+
 A **production-grade DevOps admin panel** inspired by FleetDM and TacticalRMM.  
 Includes agent-based inventory, metrics dashboards, logs, alerts, and full GitOps automation.
 
