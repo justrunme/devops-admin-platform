@@ -26,18 +26,54 @@ resource "helm_release" "argocd" {
   create_namespace = false
   depends_on       = [null_resource.install_argocd_crds]
   wait             = true
-  timeout          = 600
+  timeout          = 900
   atomic           = true
   cleanup_on_fail  = true
 
   set = [
     {
       name  = "crds.install"
-      value = "false"
+      value = "true"
     },
     {
       name  = "configs.params.server\\.insecure"
       value = "true"
+    },
+    {
+      name  = "dex.enabled"
+      value = "false"
+    },
+    {
+      name  = "notifications.enabled"
+      value = "false"
+    },
+    {
+      name  = "applicationSet.enabled"
+      value = "false"
+    },
+    {
+      name  = "server.resources.requests.cpu"
+      value = "50m"
+    },
+    {
+      name  = "server.resources.requests.memory"
+      value = "64Mi"
+    },
+    {
+      name  = "controller.resources.requests.cpu"
+      value = "100m"
+    },
+    {
+      name  = "controller.resources.requests.memory"
+      value = "128Mi"
+    },
+    {
+      name  = "repoServer.resources.requests.cpu"
+      value = "50m"
+    },
+    {
+      name  = "repoServer.resources.requests.memory"
+      value = "64Mi"
     }
   ]
 }

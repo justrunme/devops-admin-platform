@@ -8,7 +8,7 @@ on:
 jobs:
   terraform-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     env:
       TF_INPUT: false
@@ -26,6 +26,24 @@ jobs:
           node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
           cluster_name: devops-platform
           wait: 120s
+          config: |
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            nodes:
+              - role: control-plane
+                kubeadmConfigPatches:
+                  - |
+                    kind: InitConfiguration
+                    nodeRegistration:
+                      kubeletExtraArgs:
+                        node-labels: "ingress-ready=true"
+                extraPortMappings:
+                  - containerPort: 80
+                    hostPort: 80
+                    protocol: TCP
+                  - containerPort: 443
+                    hostPort: 443
+                    protocol: TCP
 
       - name: Sync kubeconfig for Terraform
         run: |
@@ -52,12 +70,13 @@ jobs:
 
       - name: Install CRDs before plan
         run: |
-          # kubernetes_manifest requires CRDs to exist at plan time
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.2/cert-manager.crds.yaml
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/application-crd.yaml
+          kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/appproject-crd.yaml
           kubectl wait --for condition=Established crd/clusterissuers.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
+          kubectl wait --for condition=Established crd/appprojects.argoproj.io --timeout=300s
 
       - name: Terraform Init
         run: cd terraform && terraform init -input=false
@@ -81,20 +100,42 @@ jobs:
           kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
 
-      - name: Terraform Apply Helm Releases
+      - name: Terraform Apply platform dependencies
         run: |
           cd terraform
           terraform apply -auto-approve -input=false \
             -target=helm_release.cert_manager \
-            -target=helm_release.argocd \
             -target=helm_release.ingress_nginx \
             -target=helm_release.redis \
-            -target=helm_release.postgresql \
-            -target=helm_release.kube_prometheus \
-            -target=helm_release.loki \
+            -target=helm_release.postgresql
+
+      - name: Wait for ingress admission webhook
+        run: |
+          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=180s
+          kubectl -n ingress-nginx wait --for=condition=ready pod -l app.kubernetes.io/component=controller --timeout=180s
+          for i in $(seq 1 30); do
+            if kubectl get validatingwebhookconfiguration ingress-nginx-admission >/dev/null 2>&1; then
+              echo "ingress admission webhook is registered"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Terraform Apply apps and GitOps
+        run: |
+          cd terraform
+          terraform apply -auto-approve -input=false \
+            -target=helm_release.argocd \
             -target=helm_release.api \
             -target=helm_release.ui \
             -target=helm_release.agent
+
+      - name: Terraform Apply monitoring
+        run: |
+          cd terraform
+          terraform apply -auto-approve -input=false \
+            -target=helm_release.kube_prometheus \
+            -target=helm_release.loki
 
       - name: Terraform Apply Manifests
         run: |

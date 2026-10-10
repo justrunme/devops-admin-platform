@@ -14,6 +14,10 @@ resource "helm_release" "ingress_nginx" {
       value = "NodePort"
     },
     {
+      name  = "controller.admissionWebhooks.enabled"
+      value = "true"
+    },
+    {
       name  = "controller.resources.requests.cpu"
       value = "50m"
     },

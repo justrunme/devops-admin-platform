@@ -33,7 +33,7 @@ resource "helm_release" "postgresql" {
     },
     {
       name  = "primary.resources.requests.cpu"
-      value = "100m"
+      value = "50m"
     },
     {
       name  = "primary.resources.requests.memory"
@@ -77,6 +77,14 @@ resource "helm_release" "redis" {
     {
       name  = "replica.replicaCount"
       value = "0"
+    },
+    {
+      name  = "master.resources.requests.cpu"
+      value = "50m"
+    },
+    {
+      name  = "master.resources.requests.memory"
+      value = "64Mi"
     }
   ]
 }
@@ -86,10 +94,11 @@ resource "helm_release" "api" {
   chart           = "../charts/api"
   namespace       = "default"
   values          = [file("../charts/api/values.yaml")]
-  depends_on      = [helm_release.redis, kubernetes_service_account.api, helm_release.postgresql]
+  depends_on      = [helm_release.redis, kubernetes_service_account.api, helm_release.postgresql, helm_release.ingress_nginx]
   timeout         = 900
   atomic          = true
   cleanup_on_fail = true
+  wait            = true
 
   set = [
     {
@@ -107,6 +116,10 @@ resource "helm_release" "api" {
     {
       name  = "serviceAccount.name"
       value = kubernetes_service_account.api.metadata[0].name
+    },
+    {
+      name  = "ingress.enabled"
+      value = "false"
     }
   ]
 }
@@ -116,9 +129,16 @@ resource "helm_release" "ui" {
   chart      = "../charts/ui"
   namespace  = "default"
   values     = [file("../charts/ui/values.yaml")]
-  depends_on = [helm_release.api]
+  depends_on = [helm_release.api, helm_release.ingress_nginx]
   timeout    = 600
   wait       = true
+
+  set = [
+    {
+      name  = "ingress.enabled"
+      value = "false"
+    }
+  ]
 }
 
 resource "helm_release" "agent" {
