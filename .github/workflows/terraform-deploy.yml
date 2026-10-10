@@ -19,31 +19,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Write kind cluster config
-        run: |
-          cat > "$RUNNER_TEMP/kind-config.yaml" <<'EOF'
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-            kubeadmConfigPatches:
-            - |
-              kind: InitConfiguration
-              nodeRegistration:
-                kubeletExtraArgs:
-                  node-labels: "ingress-ready=true"
-            extraPortMappings:
-            - containerPort: 80
-              hostPort: 80
-              protocol: TCP
-            - containerPort: 443
-              hostPort: 443
-              protocol: TCP
-          EOF
-          # Strip the leading spaces introduced by YAML indentation in the workflow file
-          sed -i 's/^          //' "$RUNNER_TEMP/kind-config.yaml"
-          cat "$RUNNER_TEMP/kind-config.yaml"
-
       - name: Create kind cluster
         uses: helm/kind-action@v1.15.1
         with:
@@ -51,7 +26,6 @@ jobs:
           node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
           cluster_name: devops-platform
           wait: 120s
-          config: ${{ runner.temp }}/kind-config.yaml
 
       - name: Sync kubeconfig for Terraform
         run: |
@@ -81,6 +55,7 @@ jobs:
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.2/cert-manager.crds.yaml
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/application-crd.yaml
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/appproject-crd.yaml
+          kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/applicationset-crd.yaml
           kubectl wait --for condition=Established crd/clusterissuers.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
