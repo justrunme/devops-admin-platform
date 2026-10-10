@@ -52,6 +52,8 @@ services:
     build: ./agent
     depends_on:
       - api
+    environment:
+      API_URL: http://api:8080/ping
     networks:
       - backend
 

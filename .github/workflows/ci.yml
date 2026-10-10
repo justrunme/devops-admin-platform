@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'chore/maintenance-2026-10']
+  pull_request:
+
+jobs:
+  go-test:
+    name: Go test (api)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.2"
+      - run: go mod download
+      - run: go vet ./...
+      - run: go test ./...
+
+  ui-build:
+    name: UI build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  terraform-validate:
+    name: Terraform validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run actionlint
+        uses: raven-actions/actionlint@v2
+        with:
+          version: "1.7.12"
+          fail-on-error: true

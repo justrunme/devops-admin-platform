@@ -1,11 +1,17 @@
-FROM golang:1.21-alpine
+FROM golang:1.27-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod ./
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
-RUN go mod tidy && go build -o api-server
+RUN CGO_ENABLED=0 go build -o api-server .
+
+FROM alpine:3.22
+WORKDIR /app
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /app/api-server /app/api-server
 
 EXPOSE 8080
-
 CMD ["./api-server"]

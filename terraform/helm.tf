@@ -1,11 +1,14 @@
-
-
 resource "helm_release" "postgresql" {
-  name       = "postgres"
-  namespace  = "default"
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "postgresql"
-  version    = "15.5.1"
+  name             = "postgres"
+  namespace        = "default"
+  repository       = "oci://registry-1.docker.io/bitnamicharts"
+  chart            = "postgresql"
+  version          = "18.12.4"
+  create_namespace = false
+  timeout          = 600
+  wait             = true
+  atomic           = true
+  cleanup_on_fail  = true
 
   set = [
     {
@@ -25,8 +28,12 @@ resource "helm_release" "postgresql" {
       value = "postgres-service"
     },
     {
+      name  = "primary.persistence.enabled"
+      value = "false"
+    },
+    {
       name  = "primary.resources.requests.cpu"
-      value = "100m"
+      value = "50m"
     },
     {
       name  = "primary.resources.requests.memory"
@@ -44,13 +51,21 @@ resource "helm_release" "postgresql" {
 }
 
 resource "helm_release" "redis" {
-  name       = "redis"
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "redis"
-  version    = "17.3.5"
-  namespace  = "default"
+  name             = "redis"
+  repository       = "oci://registry-1.docker.io/bitnamicharts"
+  chart            = "redis"
+  version          = "28.3.1"
+  namespace        = "default"
+  timeout          = 600
+  wait             = true
+  atomic           = true
+  cleanup_on_fail  = true
 
   set = [
+    {
+      name  = "architecture"
+      value = "standalone"
+    },
     {
       name  = "auth.password"
       value = "supersecurepassword"
@@ -60,34 +75,39 @@ resource "helm_release" "redis" {
       value = "false"
     },
     {
-      name  = "replica.persistence.enabled"
-      value = "false"
+      name  = "replica.replicaCount"
+      value = "0"
     },
     {
-      name  = "readinessProbe.initialDelaySeconds"
-      value = "30"
+      name  = "master.resources.requests.cpu"
+      value = "50m"
     },
     {
-      name  = "readinessProbe.periodSeconds"
-      value = "10"
+      name  = "master.resources.requests.memory"
+      value = "64Mi"
     }
   ]
 }
 
 resource "helm_release" "api" {
-  name       = "api"
-  chart      = "../charts/api"
-  namespace  = "default"
-  values     = [file("../charts/api/values.yaml")]
-  depends_on = [helm_release.redis, kubernetes_service_account.api, helm_release.postgresql]
-  timeout    = 900
-  atomic     = true
+  name            = "api"
+  chart           = "../charts/api"
+  namespace       = "default"
+  values          = [file("../charts/api/values.yaml")]
+  depends_on      = [helm_release.redis, kubernetes_service_account.api, helm_release.postgresql, helm_release.ingress_nginx]
+  timeout         = 900
+  atomic          = true
   cleanup_on_fail = true
+  wait            = true
 
   set = [
     {
       name  = "database.url"
       value = "postgres://app:secret@postgres-service:5432/app?sslmode=disable"
+    },
+    {
+      name  = "redis.url"
+      value = "redis://:supersecurepassword@redis-master:6379"
     },
     {
       name  = "serviceAccount.create"
@@ -96,6 +116,10 @@ resource "helm_release" "api" {
     {
       name  = "serviceAccount.name"
       value = kubernetes_service_account.api.metadata[0].name
+    },
+    {
+      name  = "ingress.enabled"
+      value = "false"
     }
   ]
 }
@@ -105,7 +129,16 @@ resource "helm_release" "ui" {
   chart      = "../charts/ui"
   namespace  = "default"
   values     = [file("../charts/ui/values.yaml")]
-  depends_on = [helm_release.api]
+  depends_on = [helm_release.api, helm_release.ingress_nginx]
+  timeout    = 600
+  wait       = true
+
+  set = [
+    {
+      name  = "ingress.enabled"
+      value = "false"
+    }
+  ]
 }
 
 resource "helm_release" "agent" {
@@ -114,4 +147,6 @@ resource "helm_release" "agent" {
   namespace  = "default"
   values     = [file("../charts/agent/values.yaml")]
   depends_on = [helm_release.api]
+  timeout    = 600
+  wait       = true
 }
