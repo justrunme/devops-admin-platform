@@ -13,6 +13,7 @@ jobs:
     env:
       TF_INPUT: false
       TF_IN_AUTOMATION: true
+      TF_VAR_repo_url: https://github.com/justrunme/devops-admin-platform.git
 
     steps:
       - name: Checkout repository
@@ -65,13 +66,14 @@ jobs:
         run: cd terraform && terraform validate
 
       - name: Terraform Plan
-        run: cd terraform && terraform plan -input=false -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+        run: cd terraform && terraform plan -input=false
 
       - name: Terraform Apply CRDs
-        run: >
-          cd terraform && terraform apply -auto-approve -input=false
-          -target=null_resource.install_cert_manager_crds
-          -target=null_resource.install_argocd_crds
+        run: |
+          cd terraform
+          terraform apply -auto-approve -input=false \
+            -target=null_resource.install_cert_manager_crds \
+            -target=null_resource.install_argocd_crds
 
       - name: Wait for CRDs to be Established
         run: |
@@ -80,26 +82,26 @@ jobs:
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
 
       - name: Terraform Apply Helm Releases
-        run: >
-          cd terraform && terraform apply -auto-approve -input=false
-          -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
-          -target=helm_release.cert_manager
-          -target=helm_release.argocd
-          -target=helm_release.ingress_nginx
-          -target=helm_release.redis
-          -target=helm_release.postgresql
-          -target=helm_release.kube_prometheus
-          -target=helm_release.loki
-          -target=helm_release.api
-          -target=helm_release.ui
-          -target=helm_release.agent
+        run: |
+          cd terraform
+          terraform apply -auto-approve -input=false \
+            -target=helm_release.cert_manager \
+            -target=helm_release.argocd \
+            -target=helm_release.ingress_nginx \
+            -target=helm_release.redis \
+            -target=helm_release.postgresql \
+            -target=helm_release.kube_prometheus \
+            -target=helm_release.loki \
+            -target=helm_release.api \
+            -target=helm_release.ui \
+            -target=helm_release.agent
 
       - name: Terraform Apply Manifests
-        run: >
-          cd terraform && terraform apply -auto-approve -input=false
-          -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
-          -target=kubernetes_manifest.letsencrypt_staging_cluster_issuer
-          -target=kubernetes_manifest.argocd_app
+        run: |
+          cd terraform
+          terraform apply -auto-approve -input=false \
+            -target=kubernetes_manifest.letsencrypt_staging_cluster_issuer \
+            -target=kubernetes_manifest.argocd_app
 
       - name: Verify ArgoCD Application
         run: |
