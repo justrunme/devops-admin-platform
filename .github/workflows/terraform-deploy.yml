@@ -55,7 +55,6 @@ jobs:
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.2/cert-manager.crds.yaml
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/application-crd.yaml
           kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/appproject-crd.yaml
-          kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.4/manifests/crds/applicationset-crd.yaml
           kubectl wait --for condition=Established crd/clusterissuers.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
