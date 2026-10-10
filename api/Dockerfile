@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o api-server .
 
-FROM alpine:3.22
+FROM alpine:3.24
 WORKDIR /app
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/api-server /app/api-server
