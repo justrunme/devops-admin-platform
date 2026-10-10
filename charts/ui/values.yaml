@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/justrunme/devops-admin-platform/ui
-  tag: ae3252eb651b8060aa9720c0f5ff077e44b5b6c3
+  tag: c315b8f1f0004069adfa91e4b87e1ba8bef8791d
 
 service:
   type: ClusterIP
