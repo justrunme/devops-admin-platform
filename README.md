@@ -27,6 +27,22 @@ make up
 # Kubernetes path: make tf-up
 ```
 
+## Architecture
+
+```mermaid
+flowchart LR
+  Agent[agent Python /ping] --> API[api Go REST]
+  API --> PG[(PostgreSQL)]
+  API --> Redis[(Redis)]
+  UI[ui Next.js] --> API
+  TF[terraform + charts] --> K8s[infra/k8s]
+  K8s --> API
+  K8s --> UI
+  Mon[monitoring Prometheus/Grafana/Loki] --> UI
+  CI[.github/workflows/ci.yml] --> Img[docker-build-push.yml]
+  CI --> TFci[terraform-deploy.yml]
+```
+
 ## Features
 
 | Feature | Description |
