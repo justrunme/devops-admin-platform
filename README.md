@@ -8,6 +8,7 @@ Agent-based admin panel for inventory, metrics, logs, and alerts on Kubernetes.
 [![Build and Push Docker Images](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml)
 [![Terraform Platform Deployment Test](https://github.com/justrunme/devops-admin-platform/actions/workflows/terraform-deploy.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/terraform-deploy.yml)
 [![Case study](https://img.shields.io/badge/case-justrunme.com-111111)](https://justrunme.com/cases/developer-platform-interface/)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/justrunme/devops-admin-platform/badge)](https://securityscorecards.dev/viewer/?uri=github.com/justrunme/devops-admin-platform)
 
 Case study: [Developer Platform Interface](https://justrunme.com/cases/developer-platform-interface/) · [Andrey Lesnikov](https://justrunme.com/)
 
