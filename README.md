@@ -1,17 +1,31 @@
-# DevOps Admin Panel — Zero-Trust Monitoring Platform
+# DevOps Admin Platform
+
+Agent-based admin panel for inventory, metrics, logs, and alerts on Kubernetes.
 
 [![CI](https://github.com/justrunme/devops-admin-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/ci.yml)
-[![Build and Push Docker Images](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/docker-build-push.yml)
-[![Terraform Platform Deployment Test](https://github.com/justrunme/devops-admin-platform/actions/workflows/terraform-deploy.yml/badge.svg)](https://github.com/justrunme/devops-admin-platform/actions/workflows/terraform-deploy.yml)
-
-[![Case study](https://img.shields.io/badge/case-justrunme.com-111111)](https://justrunme.com/cases/developer-platform-interface/)
+[![Release](https://img.shields.io/github/v/release/justrunme/devops-admin-platform?display_name=tag)](https://github.com/justrunme/devops-admin-platform/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Case study: [Developer Platform Interface](https://justrunme.com/cases/developer-platform-interface/) · [Andrey Lesnikov](https://justrunme.com/)
 
-A DevOps admin panel inspired by FleetDM and TacticalRMM.
-Includes agent-based inventory, metrics dashboards, logs, alerts, and GitOps automation on Kubernetes.
+## What it does
 
----
+- Exposes a Next.js admin UI (`/nodes`, `/agents`, `/metrics`, `/alerts`, `/logs`, `/status`) over a Go API
+- Collects agent heartbeats (`POST /ping`) with PostgreSQL/Redis backing services
+- Deploys platform components with Terraform/Helm and Argo CD against Kind in CI
+
+## Why
+
+- Operators need one place for inventory and signal (metrics, logs, alerts) next to GitOps-managed infra
+- Local Compose and Kind paths keep the same API/UI contract testable without a full cloud stack
+
+## Quickstart
+
+```bash
+make up
+# or: docker compose up --build
+# Kubernetes path: make tf-up
+```
 
 ## Features
 
