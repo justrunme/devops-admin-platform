@@ -1,13 +1,3 @@
-provider "helm" {
-  kubernetes = {
-    config_path = "~/.kube/config"
-  }
-}
-
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
@@ -27,26 +17,65 @@ resource "kubernetes_service_account" "api" {
   }
 }
 
-
-
 resource "helm_release" "argocd" {
-  name       = "argocd"
-  repository = "https://argoproj.github.io/argo-helm"
-  chart      = "argo-cd"
-  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  version          = "10.10.2"
+  namespace        = kubernetes_namespace.argocd.metadata[0].name
+  create_namespace = false
+  depends_on       = [null_resource.install_argocd_crds]
+  wait             = true
+  timeout          = 900
+  atomic           = true
+  cleanup_on_fail  = true
 
-  create_namespace = true
   set = [
     {
       name  = "crds.install"
       value = "false"
+    },
+    {
+      name  = "configs.params.server\\.insecure"
+      value = "true"
+    },
+    {
+      name  = "dex.enabled"
+      value = "false"
+    },
+    {
+      name  = "notifications.enabled"
+      value = "false"
+    },
+    {
+      name  = "applicationSet.enabled"
+      value = "false"
+    },
+    {
+      name  = "server.resources.requests.cpu"
+      value = "50m"
+    },
+    {
+      name  = "server.resources.requests.memory"
+      value = "64Mi"
+    },
+    {
+      name  = "controller.resources.requests.cpu"
+      value = "100m"
+    },
+    {
+      name  = "controller.resources.requests.memory"
+      value = "128Mi"
+    },
+    {
+      name  = "repoServer.resources.requests.cpu"
+      value = "50m"
+    },
+    {
+      name  = "repoServer.resources.requests.memory"
+      value = "64Mi"
     }
   ]
-  depends_on = [null_resource.install_argocd_crds]
-  wait             = true # Ensure ArgoCD is fully deployed before proceeding
-  timeout          = 600
-  atomic           = true
-  cleanup_on_fail  = true
 }
 
 resource "kubernetes_manifest" "argocd_app" {

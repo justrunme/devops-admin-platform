@@ -2,8 +2,8 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-      - main
+    branches: [main, 'chore/maintenance-2026-10']
+  pull_request:
 
 jobs:
   build-push:
@@ -16,52 +16,61 @@ jobs:
     env:
       REGISTRY: ghcr.io
       SHORT_SHA: ${{ github.sha }}
+      PUSH_IMAGES: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        if: env.PUSH_IMAGES == 'true'
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      #  Build & push all images
-      - name: Build & Push Docker Images
+      - name: Build Docker Images
         run: |
           for component in ui api agent; do
-            docker build -t $REGISTRY/${{ github.repository }}/$component:$SHORT_SHA ./$component
-            docker tag $REGISTRY/${{ github.repository }}/$component:$SHORT_SHA $REGISTRY/${{ github.repository }}/$component:latest
-            docker push $REGISTRY/${{ github.repository }}/$component:$SHORT_SHA
-            docker push $REGISTRY/${{ github.repository }}/$component:latest
+            docker build -t "$REGISTRY/${{ github.repository }}/$component:$SHORT_SHA" "./$component"
+            docker tag "$REGISTRY/${{ github.repository }}/$component:$SHORT_SHA" \
+              "$REGISTRY/${{ github.repository }}/$component:latest"
           done
 
-      #  Update image tags in values.yaml and kustomization.yaml
-      - name: Update image tags
+      - name: Push Docker Images
+        if: env.PUSH_IMAGES == 'true'
         run: |
-          # Update Helm chart values.yaml for each component
-          for chart in charts/ui charts/api charts/agent; do
-            sed -i "s|tag: .*|tag: ${SHORT_SHA}|" $chart/values.yaml
+          for component in ui api agent; do
+            docker push "$REGISTRY/${{ github.repository }}/$component:$SHORT_SHA"
+            docker push "$REGISTRY/${{ github.repository }}/$component:latest"
           done
 
-          # Update kustomization.yaml (image patches)
+      - name: Update image tags
+        if: env.PUSH_IMAGES == 'true'
+        run: |
+          for chart in charts/ui charts/api charts/agent; do
+            sed -i "s|tag: .*|tag: ${SHORT_SHA}|" "$chart/values.yaml"
+          done
+
           sed -i "/name: devops-admin-platform-ui/,/newTag:/s/newTag: .*/newTag: ${SHORT_SHA}/" infra/k8s/base/kustomization.yaml
           sed -i "/name: devops-admin-platform-api/,/newTag:/s/newTag: .*/newTag: ${SHORT_SHA}/" infra/k8s/base/kustomization.yaml
           sed -i "/name: devops-admin-platform-agent/,/newTag:/s/newTag: .*/newTag: ${SHORT_SHA}/" infra/k8s/base/kustomization.yaml
 
-      # ✅ Commit and push only if there are changes
       - name: Commit & Push updated tags
+        if: env.PUSH_IMAGES == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add charts/*/values.yaml infra/k8s/base/kustomization.yaml || true
+          git add charts/*/values.yaml infra/k8s/base/kustomization.yaml
 
           if git diff --cached --quiet; then
-            echo "✅ No changes — nothing to commit."
+            echo "No changes — nothing to commit."
           else
             git commit -m "ci: update image tags to ${SHORT_SHA}"
-            git pull --rebase --autostash
+            git pull --rebase --autostash origin main
             git push origin main
           fi

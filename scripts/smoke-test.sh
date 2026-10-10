@@ -1,24 +1,22 @@
 #!/bin/bash
-
-# Script to perform smoke tests after deployment
+set -euo pipefail
 
 echo "Running smoke tests..."
 
-# Check UI accessibility
-UI_URL=$(minikube service ui-service --url)
-if curl --output /dev/null --silent --head --fail "$UI_URL"; then
+UI_URL="${UI_URL:-http://localhost:3000}"
+API_URL="${API_URL:-http://localhost:8080}"
+
+if curl --output /dev/null --silent --fail "$UI_URL"; then
   echo "UI is accessible at $UI_URL"
 else
-  echo "UI is not accessible at $UI_URL"
+  echo "UI is not accessible at $UI_URL" >&2
   exit 1
 fi
 
-# Check API accessibility
-API_URL=$(minikube service api-service --url)
-if curl --output /dev/null --silent --head --fail "$API_URL/health"; then
+if curl --output /dev/null --silent --fail "$API_URL/health"; then
   echo "API is accessible at $API_URL/health"
 else
-  echo "API is not accessible at $API_URL/health"
+  echo "API is not accessible at $API_URL/health" >&2
   exit 1
 fi
 

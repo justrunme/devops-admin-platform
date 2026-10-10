@@ -35,7 +35,7 @@ func main() {
 	// Настройка роутера
 	r := mux.NewRouter()
 
-	// Маршруты API
+	r.HandleFunc("/ping", handlers.PingHandler).Methods("POST")
 	r.HandleFunc("/api/nodes", handlers.GetNodes).Methods("GET")
 	r.HandleFunc("/api/metrics", handlers.GetMetrics).Methods("GET")
 	r.HandleFunc("/api/status", handlers.GetSystemStatus).Methods("GET")

@@ -1,8 +1,82 @@
-# Terraform artifacts
+# Terraform
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 .terraform/
-.terraform.lock.hcl
+.terraform.tfstate.lock.info
 
-# Node.js
+# Node / Next.js
 node_modules/
+ui/.next/
+ui/out/
+ui/build/
+ui/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Go
+api/api-server
+api/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Binaries / build artifacts
+*.bin
+*.o
+dist/
+build/
+bin/
+tmp/
+temp/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Coverage / test
+coverage/
+*.cover
+*.coverage
+.nyc_output/
+
+# Docker
+*.log

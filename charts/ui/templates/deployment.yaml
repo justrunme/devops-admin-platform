@@ -47,7 +47,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: "http://api-service:8080" # Assuming api-service is the service name for the API
+              value: "http://api:8080"
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
