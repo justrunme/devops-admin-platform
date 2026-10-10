@@ -19,6 +19,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Write kind cluster config
+        run: |
+          cat > "$RUNNER_TEMP/kind-config.yaml" <<'EOF'
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            kubeadmConfigPatches:
+            - |
+              kind: InitConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "ingress-ready=true"
+            extraPortMappings:
+            - containerPort: 80
+              hostPort: 80
+              protocol: TCP
+            - containerPort: 443
+              hostPort: 443
+              protocol: TCP
+          EOF
+          # Strip the leading spaces introduced by YAML indentation in the workflow file
+          sed -i 's/^          //' "$RUNNER_TEMP/kind-config.yaml"
+          cat "$RUNNER_TEMP/kind-config.yaml"
+
       - name: Create kind cluster
         uses: helm/kind-action@v1.15.1
         with:
@@ -26,24 +51,7 @@ jobs:
           node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
           cluster_name: devops-platform
           wait: 120s
-          config: |
-            kind: Cluster
-            apiVersion: kind.x-k8s.io/v1alpha4
-            nodes:
-              - role: control-plane
-                kubeadmConfigPatches:
-                  - |
-                    kind: InitConfiguration
-                    nodeRegistration:
-                      kubeletExtraArgs:
-                        node-labels: "ingress-ready=true"
-                extraPortMappings:
-                  - containerPort: 80
-                    hostPort: 80
-                    protocol: TCP
-                  - containerPort: 443
-                    hostPort: 443
-                    protocol: TCP
+          config: ${{ runner.temp }}/kind-config.yaml
 
       - name: Sync kubeconfig for Terraform
         run: |
@@ -113,13 +121,15 @@ jobs:
         run: |
           kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=180s
           kubectl -n ingress-nginx wait --for=condition=ready pod -l app.kubernetes.io/component=controller --timeout=180s
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if kubectl get validatingwebhookconfiguration ingress-nginx-admission >/dev/null 2>&1; then
               echo "ingress admission webhook is registered"
-              break
+              exit 0
             fi
             sleep 2
           done
+          echo "ingress admission webhook not found" >&2
+          exit 1
 
       - name: Terraform Apply apps and GitOps
         run: |
