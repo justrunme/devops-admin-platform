@@ -2,8 +2,12 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [main, 'chore/maintenance-2026-10']
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-push:
@@ -52,6 +56,9 @@ jobs:
       - name: Update image tags
         if: env.PUSH_IMAGES == 'true'
         run: |
+          # Apply the tag bump on top of the current main so parallel merges do not conflict
+          git fetch origin main
+          git checkout -B main origin/main
           for chart in charts/ui charts/api charts/agent; do
             sed -i "s|tag: .*|tag: ${SHORT_SHA}|" "$chart/values.yaml"
           done
@@ -71,6 +78,5 @@ jobs:
             echo "No changes — nothing to commit."
           else
             git commit -m "ci: update image tags to ${SHORT_SHA}"
-            git pull --rebase --autostash origin main
             git push origin main
           fi
