@@ -1,13 +1,3 @@
-provider "helm" {
-  kubernetes = {
-    config_path = "~/.kube/config"
-  }
-}
-
-provider "kubernetes" {
-  config_path = "~/.kube/config"
-}
-
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
@@ -27,26 +17,29 @@ resource "kubernetes_service_account" "api" {
   }
 }
 
-
-
 resource "helm_release" "argocd" {
-  name       = "argocd"
-  repository = "https://argoproj.github.io/argo-helm"
-  chart      = "argo-cd"
-  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  version          = "10.10.2"
+  namespace        = kubernetes_namespace.argocd.metadata[0].name
+  create_namespace = false
+  depends_on       = [null_resource.install_argocd_crds]
+  wait             = true
+  timeout          = 600
+  atomic           = true
+  cleanup_on_fail  = true
 
-  create_namespace = true
   set = [
     {
       name  = "crds.install"
       value = "false"
+    },
+    {
+      name  = "configs.params.server\\.insecure"
+      value = "true"
     }
   ]
-  depends_on = [null_resource.install_argocd_crds]
-  wait             = true # Ensure ArgoCD is fully deployed before proceeding
-  timeout          = 600
-  atomic           = true
-  cleanup_on_fail  = true
 }
 
 resource "kubernetes_manifest" "argocd_app" {

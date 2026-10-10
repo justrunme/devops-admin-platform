@@ -2,89 +2,114 @@ name: Terraform Platform Deployment Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, 'chore/maintenance-2026-10']
   pull_request:
 
 jobs:
   terraform-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     env:
-      KUBECONFIG: /home/runner/.kube/config
       TF_INPUT: false
+      TF_IN_AUTOMATION: true
 
     steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-      - name:  Setup prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl unzip
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube-linux-amd64 /usr/local/bin/minikube
-          curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-          chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo add grafana https://grafana.github.io/helm-charts
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add argoproj https://argoproj.github.io/argo-helm
-          helm repo add jetstack https://charts.jetstack.io
-          helm repo update
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.15.1
+        with:
+          version: v0.33.0
+          node_image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+          cluster_name: devops-platform
+          wait: 120s
 
-      - name:  Start Minikube
+      - name: Sync kubeconfig for Terraform
         run: |
-          minikube start --driver=docker --kubernetes-version=v1.27.3
-          minikube status
+          mkdir -p "$HOME/.kube"
+          kind get kubeconfig --name devops-platform > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl cluster-info
           kubectl get nodes
 
-      - name:  Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
-      - name:  Terraform Init
-        run: cd terraform && terraform init
-
-      - name:  Terraform Plan
-        run: cd terraform && terraform plan -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
-
-      - name: ✅ Terraform Apply CRDs
-        run: cd terraform && terraform apply -auto-approve -target=null_resource.install_cert_manager_crds -target=null_resource.install_argocd_crds
-
-      - name: ✅ Wait for CRDs to be Established
+      - name: Add Helm repos
         run: |
-          cd terraform
-          # Wait for cert-manager CRDs
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add argoproj https://argoproj.github.io/argo-helm
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: cd terraform && terraform init -input=false
+
+      - name: Terraform Validate
+        run: cd terraform && terraform validate
+
+      - name: Terraform Plan
+        run: cd terraform && terraform plan -input=false -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+
+      - name: Terraform Apply CRDs
+        run: >
+          cd terraform && terraform apply -auto-approve -input=false
+          -target=null_resource.install_cert_manager_crds
+          -target=null_resource.install_argocd_crds
+
+      - name: Wait for CRDs to be Established
+        run: |
           kubectl wait --for condition=Established crd/clusterissuers.cert-manager.io --timeout=300s
           kubectl wait --for condition=Established crd/certificaterequests.cert-manager.io --timeout=300s
-          # Wait for ArgoCD CRDs
           kubectl wait --for condition=Established crd/applications.argoproj.io --timeout=300s
 
-      - name: ✅ Terraform Apply Helm Releases
-        run: cd terraform && terraform apply -auto-approve -var="repo_url=https://github.com/justrunme/devops-admin-platform.git" -target=helm_release.cert_manager -target=helm_release.argocd -target=helm_release.ingress_nginx -target=helm_release.redis -target=helm_release.postgresql -target=helm_release.kube_prometheus -target=helm_release.loki -target=helm_release.api -target=helm_release.ui -target=helm_release.agent
+      - name: Terraform Apply Helm Releases
+        run: >
+          cd terraform && terraform apply -auto-approve -input=false
+          -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+          -target=helm_release.cert_manager
+          -target=helm_release.argocd
+          -target=helm_release.ingress_nginx
+          -target=helm_release.redis
+          -target=helm_release.postgresql
+          -target=helm_release.kube_prometheus
+          -target=helm_release.loki
+          -target=helm_release.api
+          -target=helm_release.ui
+          -target=helm_release.agent
 
-      - name: ✅ Terraform Apply Manifests
-        run: cd terraform && terraform apply -auto-approve -var="repo_url=https://github.com/justrunme/devops-admin-platform.git" -target=kubernetes_manifest.letsencrypt_staging_cluster_issuer -target=kubernetes_manifest.argocd_app
+      - name: Terraform Apply Manifests
+        run: >
+          cd terraform && terraform apply -auto-approve -input=false
+          -var="repo_url=https://github.com/justrunme/devops-admin-platform.git"
+          -target=kubernetes_manifest.letsencrypt_staging_cluster_issuer
+          -target=kubernetes_manifest.argocd_app
 
-      - name: ️ Verify ArgoCD Application
+      - name: Verify ArgoCD Application
         run: |
           kubectl get application -n argocd devops-platform
-          kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=120s
+          kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=180s
 
-      - name: ✅ Check Pods Health
+      - name: Check Pods Health
         run: |
           kubectl get pods -A
           kubectl get deployment -A
-          kubectl rollout status deployment/ui --timeout=120s
-          kubectl rollout status deployment/api --timeout=120s
-          kubectl rollout status deployment/agent --timeout=120s
+          kubectl rollout status deployment/ui --timeout=180s
+          kubectl rollout status deployment/api --timeout=180s
+          kubectl rollout status deployment/agent --timeout=180s
 
-      - name:  Verify HTTP endpoints
+      - name: Verify HTTP endpoints
         run: |
           kubectl port-forward svc/ui 3000:3000 &
           kubectl port-forward svc/api 8080:8080 &
           sleep 10
-          curl -f http://localhost:3000
-          curl -f http://localhost:8080/api/status
+          curl -fsS http://localhost:3000
+          curl -fsS http://localhost:8080/api/status
+          curl -fsS http://localhost:8080/health

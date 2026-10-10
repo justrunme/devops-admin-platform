@@ -1,8 +1,12 @@
 resource "helm_release" "kube_prometheus" {
   name       = "monitoring"
   namespace  = kubernetes_namespace.monitoring.metadata[0].name
-  repository = "prometheus-community"
+  repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
+  version    = "92.3.0"
+  timeout    = 900
+  wait       = true
+  depends_on = [helm_release.cert_manager]
 
   set = [
     {
@@ -11,48 +15,60 @@ resource "helm_release" "kube_prometheus" {
     },
     {
       name  = "grafana.ingress.enabled"
-      value = "true"
-    },
-    {
-      name  = "grafana.ingress.annotations.\"cert-manager\\.io/cluster-issuer\""
-      value = "letsencrypt-staging"
-    },
-    {
-      name  = "grafana.ingress.hosts[0]"
-      value = "grafana.devops.local"
-    },
-    {
-      name  = "grafana.ingress.tls[0].hosts[0]"
-      value = "grafana.devops.local"
-    },
-    {
-      name  = "grafana.ingress.tls[0].secretName"
-      value = "grafana-tls"
+      value = "false"
     },
     {
       name  = "prometheus.ingress.enabled"
+      value = "false"
+    },
+    {
+      name  = "prometheus.prometheusSpec.resources.requests.memory"
+      value = "256Mi"
+    },
+    {
+      name  = "prometheus.prometheusSpec.resources.requests.cpu"
+      value = "100m"
+    },
+    {
+      name  = "alertmanager.enabled"
       value = "true"
     },
     {
-      name  = "prometheus.ingress.hosts[0]"
-      value = "prometheus.localhost"
-    }
-  ]
-
-  depends_on = [helm_release.cert_manager]
-}
-
-resource "helm_release" "loki" {
-  name       = "loki"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
-  repository = "grafana"
-  chart      = "loki-stack"
-
-  set = [
+      name  = "kubeEtcd.enabled"
+      value = "false"
+    },
     {
-      name  = "grafana.enabled"
+      name  = "kubeControllerManager.enabled"
+      value = "false"
+    },
+    {
+      name  = "kubeScheduler.enabled"
       value = "false"
     }
   ]
 }
 
+resource "helm_release" "loki" {
+  name       = "loki"
+  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki-stack"
+  version    = "2.10.3"
+  timeout    = 600
+  wait       = true
+
+  set = [
+    {
+      name  = "grafana.enabled"
+      value = "false"
+    },
+    {
+      name  = "prometheus.enabled"
+      value = "false"
+    },
+    {
+      name  = "loki.persistence.enabled"
+      value = "false"
+    }
+  ]
+}
