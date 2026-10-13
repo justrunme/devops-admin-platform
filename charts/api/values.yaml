@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/justrunme/devops-admin-platform/api
-  tag: 12232fbb6b576ce61b49b952ca5ead0ada98fc36
+  tag: ce41416b3c77ff3f39bf418dd3c42511ad0d2586
   pullPolicy: IfNotPresent
 
 replicaCount: 1
