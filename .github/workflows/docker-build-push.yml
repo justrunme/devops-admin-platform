@@ -16,9 +16,12 @@ jobs:
   build-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      # Push images to GHCR
       packages: write
+      # OIDC for cosign keyless signing and provenance attestations
       id-token: write
+      # Upload build provenance attestations
       attestations: write
     strategy:
       fail-fast: false
@@ -105,6 +108,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
+      # Commit and push updated Helm/Kustomize image tags to main
       contents: write
     env:
       SHORT_SHA: ${{ github.sha }}
